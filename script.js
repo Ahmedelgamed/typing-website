@@ -68,6 +68,14 @@ class TypingTest {
         const textArray = this.texts[difficulty];
         this.currentText = textArray[Math.floor(Math.random() * textArray.length)];
         
+        // Google Analytics: Track test start
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'test_started', {
+                'difficulty': difficulty,
+                'custom_parameter': 'typing_test'
+            });
+        }
+        
         this.displayText();
         this.typingInput.disabled = false;
         this.typingInput.focus();
@@ -182,6 +190,26 @@ class TypingTest {
         this.calculateFinalStats();
         this.saveStats();
         this.showResults();
+        
+        // Google Analytics: Track test completion with performance metrics
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'test_completed', {
+                'wpm': this.finalWpm,
+                'accuracy': this.finalAccuracy,
+                'difficulty': this.difficultySelect.value,
+                'characters_typed': this.finalCharsTyped,
+                'errors': this.errors,
+                'custom_parameter': 'typing_performance'
+            });
+            
+            // Track high performance for conversion optimization
+            if (this.finalWpm > 60) {
+                gtag('event', 'high_wpm_achieved', {
+                    'wpm': this.finalWpm,
+                    'value': this.finalWpm
+                });
+            }
+        }
     }
     
     calculateFinalStats() {
@@ -272,6 +300,43 @@ class TypingTest {
 // Initialize the typing test when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new TypingTest();
+    
+    // Google Analytics: Track page view and engagement
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'page_view', {
+            'page_title': 'Typing Speed Test',
+            'page_location': window.location.href,
+            'custom_parameter': 'page_load'
+        });
+    }
+    
+    // Track ad visibility and interactions
+    const adContainers = document.querySelectorAll('.ad-container');
+    adContainers.forEach((container, index) => {
+        // Track when ad comes into view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && typeof gtag !== 'undefined') {
+                    gtag('event', 'ad_impression', {
+                        'ad_position': index === 0 ? 'top_banner' : 'bottom_banner',
+                        'custom_parameter': 'monetization'
+                    });
+                }
+            });
+        });
+        observer.observe(container);
+    });
+    
+    // Track difficulty selection
+    const difficultySelect = document.getElementById('difficulty-select');
+    difficultySelect.addEventListener('change', (e) => {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'difficulty_changed', {
+                'difficulty': e.target.value,
+                'custom_parameter': 'user_preference'
+            });
+        }
+    });
 });
 
 // Add keyboard shortcuts
@@ -279,5 +344,13 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const typingTest = new TypingTest();
         typingTest.resetTest();
+        
+        // Track shortcut usage
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'keyboard_shortcut_used', {
+                'shortcut': 'escape_reset',
+                'custom_parameter': 'user_behavior'
+            });
+        }
     }
 });
