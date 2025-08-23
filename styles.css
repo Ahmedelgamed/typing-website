@@ -814,6 +814,19 @@ footer {
     border: 1px solid rgba(0, 212, 255, 0.1);
 }
 
+.footer-branding {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.footer-branding p {
+    font-size: 0.9rem;
+    color: var(--gray);
+    font-style: italic;
+    margin: 0;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 20px 15px;
