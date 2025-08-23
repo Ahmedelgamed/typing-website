@@ -70,6 +70,77 @@ header {
     animation: float 6s ease-in-out infinite;
 }
 
+.mode-toggle {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.toggle-switch input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: linear-gradient(145deg, rgba(52, 58, 84, 0.8), rgba(30, 35, 58, 0.8));
+    border-radius: 15px;
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    transition: all 0.3s ease;
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, var(--light-gray), #e2e8f0);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-slider {
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    border-color: var(--secondary-color);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 4px 12px rgba(0, 212, 255, 0.3),
+        0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
+    left: 32px;
+    background: linear-gradient(135deg, var(--white), #f1f5f9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-label {
+    color: var(--light-gray);
+    font-weight: 500;
+    font-size: 1rem;
+    user-select: none;
+    transition: color 0.3s ease;
+}
+
+.toggle-switch:hover .toggle-label {
+    color: var(--secondary-color);
+}
+
 @keyframes float {
     0%, 100% { transform: translateZ(20px) translateY(0px); }
     50% { transform: translateZ(20px) translateY(-10px); }

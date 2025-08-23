@@ -40,6 +40,7 @@
     }
     </script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -60,6 +61,13 @@
         <header>
             <h1>TypingMaster - Free Online Typing Speed Test</h1>
             <p>Master your typing skills with real-time WPM tracking and accuracy feedback. Improve your keyboard speed with our free typing test.</p>
+            <div class="mode-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="enhanced-mode" checked>
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Enhanced Mode (keybr.com style)</span>
+                </label>
+            </div>
         </header>
 
         <div class="stats-bar">
@@ -202,6 +210,7 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="enhanced-script.js"></script>
     <script>
         // Lazy load ads when they come into view
         const initializeAds = () => {
