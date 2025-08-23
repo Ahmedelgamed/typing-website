@@ -19,6 +19,9 @@
     <meta property="twitter:title" content="Free Typing Speed Test - WPM Test Online">
     <meta property="twitter:description" content="Test your typing speed with our modern 3D typing test. Real-time WPM tracking and detailed statistics.">
     
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://ahmedelgamed.netlify.app/">
+    
     <!-- Schema.org markup for Google -->
     <script type="application/ld+json">
     {
@@ -37,6 +40,8 @@
     }
     </script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6754537992271927"
      crossorigin="anonymous"></script>
@@ -53,8 +58,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>TypingMaster</h1>
-            <p>Master your typing skills with real-time feedback</p>
+            <h1>TypingMaster - Free Online Typing Speed Test</h1>
+            <p>Master your typing skills with real-time WPM tracking and accuracy feedback. Improve your keyboard speed with our free typing test.</p>
         </header>
 
         <div class="stats-bar">
@@ -99,12 +104,12 @@
         </div>
 
         <div class="controls">
-            <button id="start-btn" class="btn primary">Start Test</button>
-            <button id="reset-btn" class="btn secondary">Reset</button>
-            <select id="difficulty-select">
-                <option value="easy">Easy</option>
-                <option value="medium" selected>Medium</option>
-                <option value="hard">Hard</option>
+            <button id="start-btn" class="btn primary">Start Typing Test</button>
+            <button id="reset-btn" class="btn secondary">Reset Test</button>
+            <select id="difficulty-select" aria-label="Select typing test difficulty">
+                <option value="easy">Easy - Simple Words</option>
+                <option value="medium" selected>Medium - Mixed Content</option>
+                <option value="hard">Hard - Technical Text</option>
             </select>
         </div>
 
@@ -140,16 +145,89 @@
                  data-full-width-responsive="true"></ins>
         </div>
 
+        <nav class="internal-links">
+            <a href="#typing-test" class="nav-link">Take Test</a>
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#benefits" class="nav-link">Benefits</a>
+            <a href="#tips" class="nav-link">Typing Tips</a>
+        </nav>
+
+        <section id="typing-test" class="content-section">
+            <h2>Free Online Typing Speed Test</h2>
+            <p>Test your <strong>typing speed</strong> and accuracy with our professional WPM calculator. Start typing in the box above to begin your <a href="#features">real-time typing assessment</a>.</p>
+        </section>
+
+        <section id="features" class="content-section">
+            <h2>Typing Test Features</h2>
+            <p>Our <strong>online typing test</strong> offers comprehensive features to help improve your keyboard skills:</p>
+            <ul>
+                <li><strong>Real-time WPM calculation</strong> - See your typing speed as you type</li>
+                <li><strong>Accuracy tracking</strong> - Monitor your mistake rate and improve precision</li>
+                <li><strong>Multiple difficulty levels</strong> - Choose from <a href="#typing-test">easy, medium, or hard typing tests</a></li>
+                <li><strong>Performance statistics</strong> - Track your best WPM and average scores</li>
+                <li><strong>Mobile-friendly design</strong> - Practice typing on any device</li>
+            </ul>
+        </section>
+            
+        <section id="benefits" class="content-section">
+            <h2>Benefits of Regular Typing Practice</h2>
+            <p>Consistent practice with our <strong>free typing test</strong> helps you:</p>
+            <ul>
+                <li>Increase keyboard speed and productivity</li>
+                <li>Reduce typing errors and improve accuracy</li>
+                <li>Develop muscle memory for faster typing</li>
+                <li>Enhance your overall computer skills</li>
+                <li>Boost your professional efficiency</li>
+            </ul>
+            <p>Learn more about <a href="#tips">effective typing techniques</a> to maximize your improvement.</p>
+        </section>
+
+        <section id="tips" class="content-section">
+            <h2>How to Improve Your Typing Speed</h2>
+            <p>Regular typing practice is essential for increasing your WPM (words per minute) and accuracy. Our <a href="#typing-test">free online typing test</a> provides instant feedback to help you track your progress.</p>
+            
+            <h3>Effective Typing Techniques</h3>
+            <ul>
+                <li><strong>Use proper finger positioning</strong> - Follow touch typing methods</li>
+                <li><strong>Practice regularly</strong> - Take our <a href="#typing-test">typing speed test</a> daily</li>
+                <li><strong>Focus on accuracy first</strong> - Speed will naturally follow</li>
+                <li><strong>Use all difficulty levels</strong> - Progress from easy to hard texts</li>
+                <li><strong>Maintain good posture</strong> - Sit upright with wrists straight</li>
+            </ul>
+        </section>
+
         <footer>
-            <p>Practice daily to improve your typing speed and accuracy!</p>
+            <p>Start your <strong>free typing speed test</strong> today and improve your keyboard skills with TypingMaster!</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Initialize AdSense ads
-        (adsbygoogle = window.adsbygoogle || []).push({});
-        (adsbygoogle = window.adsbygoogle || []).push({});
+        // Lazy load ads when they come into view
+        const initializeAds = () => {
+            const ads = document.querySelectorAll('.adsbygoogle');
+            const adObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.dataset.adLoaded) {
+                        try {
+                            (adsbygoogle = window.adsbygoogle || []).push({});
+                            entry.target.dataset.adLoaded = 'true';
+                        } catch (e) {
+                            console.log('Ad loading error:', e);
+                        }
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            ads.forEach(ad => adObserver.observe(ad));
+        };
+        
+        // Initialize ads after page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeAds);
+        } else {
+            initializeAds();
+        }
     </script>
 </body>
 </html>
