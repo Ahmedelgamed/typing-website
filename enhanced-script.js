@@ -1,6 +1,5 @@
 class EnhancedTypingTrainer {
     constructor() {
-        // Adaptive Learning System - tracks problematic keys
         this.keyStats = this.loadKeyStats();
         this.adaptiveDifficulty = 1;
         this.focusKeys = this.getFocusKeys();

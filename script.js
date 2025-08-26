@@ -2,9 +2,11 @@ class TypingTest {
     constructor() {
         this.texts = {
             easy: [
-                "The quick brown fox jumps over the lazy dog. This is a simple sentence to practice typing skills.",
-                "Coding is fun and creative. It helps solve problems and build amazing things for everyone to use.",
-                "Practice makes perfect. The more you type, the faster and more accurate you will become over time."
+                "the quick brown fox jumps over the lazy dog and runs through the forest",
+                "she sells sea shells by the sea shore every morning at dawn",
+                "practice makes perfect when you work hard and stay focused on your goals",
+                "coffee tastes better in the morning when you have time to relax",
+                "music helps people express their feelings and connect with others around them"
             ],
             medium: [
                 "JavaScript is a versatile programming language that powers both web browsers and server applications. It enables developers to create interactive websites and dynamic user experiences.",
@@ -15,6 +17,20 @@ class TypingTest {
                 "The implementation of quantum computing algorithms requires understanding complex mathematical concepts including linear algebra, probability theory, and quantum mechanics. These systems leverage quantum superposition and entanglement phenomena.",
                 "Cryptographic protocols ensure data security through sophisticated mathematical functions including elliptic curve cryptography, hash functions, and digital signatures. Modern encryption standards protect billions of transactions daily.",
                 "Distributed systems architecture involves coordinating multiple computers to work together as a unified system. Challenges include consensus algorithms, fault tolerance, network partitions, and maintaining data consistency."
+            ],
+            quotes: [
+                "The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle.",
+                "Innovation distinguishes between a leader and a follower. Think different and create something amazing.",
+                "Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work.",
+                "The future belongs to those who believe in the beauty of their dreams and work hard to achieve them.",
+                "Success is not final, failure is not fatal: it is the courage to continue that counts in life."
+            ],
+            numbers: [
+                "In 2024, there were 1,234,567 users online. The server processed 890 requests per second on average.",
+                "The temperature reached 98.6 degrees at 3:45 PM. We recorded 123 measurements throughout the day.",
+                "Password: Aa1!Bb2@Cc3#Dd4$ - Remember these 16 characters exactly as shown with symbols.",
+                "Invoice #INV-2024-0789: $1,250.50 due by 01/15/2024. Account: 555-123-4567-8901.",
+                "IP Address: 192.168.1.1 Port: 8080 Connection established at 14:30:45 GMT+5."
             ]
         };
         
@@ -27,6 +43,7 @@ class TypingTest {
         this.timer = null;
         this.timeLimit = 60;
         this.timeRemaining = 60;
+        this.tabPressed = false;
         
         this.initializeElements();
         this.bindEvents();
@@ -55,6 +72,60 @@ class TypingTest {
         this.resetBtn.addEventListener('click', () => this.resetTest());
         this.typingInput.addEventListener('input', () => this.handleInput());
         this.difficultySelect.addEventListener('change', () => this.resetTest());
+        
+        document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
+    }
+    
+    handleKeyboardShortcuts(e) {
+        if (e.key === 'Tab' && e.shiftKey === false) {
+            e.preventDefault();
+            this.tabPressed = true;
+            setTimeout(() => {
+                this.tabPressed = false;
+            }, 1000);
+            return;
+        }
+        
+        if (e.key === 'Enter' && this.tabPressed) {
+            e.preventDefault();
+            this.resetTest();
+            return;
+        }
+        
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            if (document.activeElement === this.typingInput) {
+                this.typingInput.blur();
+            } else {
+                this.typingInput.focus();
+            }
+            return;
+        }
+        
+        if (e.key === 'Enter' && !this.tabPressed && !this.isTestActive) {
+            e.preventDefault();
+            this.startTest();
+            return;
+        }
+        
+        if (e.key === ' ' && !this.isTestActive && document.activeElement !== this.typingInput) {
+            e.preventDefault();
+            this.startTest();
+            return;
+        }
+        
+        if (this.isTestActive && !this.isModifierKey(e.key) && document.activeElement !== this.typingInput) {
+            this.typingInput.focus();
+        }
+    }
+    
+    isModifierKey(key) {
+        const modifierKeys = [
+            'Control', 'Alt', 'Shift', 'Meta', 'CapsLock', 'Tab', 
+            'Escape', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+            'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'
+        ];
+        return modifierKeys.includes(key);
     }
     
     startTest() {
@@ -68,13 +139,6 @@ class TypingTest {
         const textArray = this.texts[difficulty];
         this.currentText = textArray[Math.floor(Math.random() * textArray.length)];
         
-        // Google Analytics: Track test start
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'test_started', {
-                'difficulty': difficulty,
-                'custom_parameter': 'typing_test'
-            });
-        }
         
         this.displayText();
         this.typingInput.disabled = false;
@@ -154,12 +218,10 @@ class TypingTest {
         const currentTime = new Date();
         const timeElapsed = (currentTime - this.startTime) / 1000 / 60; // in minutes
         
-        // Calculate WPM
-        const wordsTyped = inputValue.length / 5; // Standard: 5 characters = 1 word
+        const wordsTyped = inputValue.length / 5;
         const wpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0;
         this.wpmElement.textContent = wpm;
         
-        // Calculate accuracy
         let correctChars = 0;
         this.errors = 0;
         
@@ -191,36 +253,14 @@ class TypingTest {
         this.saveStats();
         this.showResults();
         
-        // Google Analytics: Track test completion with performance metrics
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'test_completed', {
-                'wpm': this.finalWpm,
-                'accuracy': this.finalAccuracy,
-                'difficulty': this.difficultySelect.value,
-                'characters_typed': this.finalCharsTyped,
-                'errors': this.errors,
-                'custom_parameter': 'typing_performance'
-            });
-            
-            // Track high performance for conversion optimization
-            if (this.finalWpm > 60) {
-                gtag('event', 'high_wpm_achieved', {
-                    'wpm': this.finalWpm,
-                    'value': this.finalWpm
-                });
-            }
-        }
     }
     
     calculateFinalStats() {
         const inputValue = this.typingInput.value;
         const timeElapsed = (this.endTime - this.startTime) / 1000 / 60; // in minutes
         
-        // Final WPM calculation
         const wordsTyped = inputValue.length / 5;
         this.finalWpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0;
-        
-        // Final accuracy calculation
         let correctChars = 0;
         for (let i = 0; i < inputValue.length; i++) {
             if (i < this.currentText.length && inputValue[i] === this.currentText[i]) {
@@ -301,56 +341,5 @@ class TypingTest {
 document.addEventListener('DOMContentLoaded', () => {
     new TypingTest();
     
-    // Google Analytics: Track page view and engagement
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'page_view', {
-            'page_title': 'Typing Speed Test',
-            'page_location': window.location.href,
-            'custom_parameter': 'page_load'
-        });
-    }
-    
-    // Track ad visibility and interactions
-    const adContainers = document.querySelectorAll('.ad-container');
-    adContainers.forEach((container, index) => {
-        // Track when ad comes into view
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && typeof gtag !== 'undefined') {
-                    gtag('event', 'ad_impression', {
-                        'ad_position': index === 0 ? 'top_banner' : 'bottom_banner',
-                        'custom_parameter': 'monetization'
-                    });
-                }
-            });
-        });
-        observer.observe(container);
-    });
-    
-    // Track difficulty selection
-    const difficultySelect = document.getElementById('difficulty-select');
-    difficultySelect.addEventListener('change', (e) => {
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'difficulty_changed', {
-                'difficulty': e.target.value,
-                'custom_parameter': 'user_preference'
-            });
-        }
-    });
 });
 
-// Add keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        const typingTest = new TypingTest();
-        typingTest.resetTest();
-        
-        // Track shortcut usage
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'keyboard_shortcut_used', {
-                'shortcut': 'escape_reset',
-                'custom_parameter': 'user_behavior'
-            });
-        }
-    }
-});

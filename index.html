@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TypingMaster - The Ultimate Free Typing Speed Test & Training Tool</title>
-    <meta name="description" content="TypingMaster: Professional typing speed test with adaptive learning, virtual keyboard, and real-time feedback. Master touch typing with our advanced training system - completely free!">
-    <meta name="keywords" content="TypingMaster, typing speed test, WPM test, touch typing trainer, adaptive typing practice, virtual keyboard, typing skills, keyboard training, free typing test">
+    <title>SpeedWPM - Free Typing Speed Test</title>
+    <meta name="description" content="SpeedWPM: Clean, fast typing speed test. Test your WPM and accuracy with multiple text modes. Simple, effective typing practice."
+    <meta name="keywords" content="SpeedWPM, typing speed test, WPM test, typing practice, free typing test, typing trainer, keyboard speed">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ahmedelgamed.netlify.app/">
-    <meta property="og:title" content="TypingMaster - Ultimate Free Typing Speed Test & Training">
-    <meta property="og:description" content="TypingMaster: The most advanced free typing trainer with adaptive learning, virtual keyboard, and professional analytics. Master touch typing today!">
+    <meta property="og:url" content="https://speedwpm.com/">
+    <meta property="og:title" content="SpeedWPM - Free Typing Speed Test">
+    <meta property="og:description" content="SpeedWPM: Clean, fast typing speed test. Test your WPM and accuracy with multiple text modes."
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://ahmedelgamed.netlify.app/">
-    <meta property="twitter:title" content="TypingMaster - Ultimate Free Typing Speed Test & Training">
-    <meta property="twitter:description" content="TypingMaster: The most advanced free typing trainer with adaptive learning, virtual keyboard, and professional analytics. Master touch typing today!">
+    <meta property="twitter:url" content="https://speedwpm.com/">
+    <meta property="twitter:title" content="SpeedWPM - Free Typing Speed Test">
+    <meta property="twitter:description" content="SpeedWPM: Clean, fast typing speed test. Test your WPM and accuracy with multiple text modes."
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://ahmedelgamed.netlify.app/">
+    <link rel="canonical" href="https://speedwpm.com/">
     
     <!-- Schema.org markup for Google -->
     <script type="application/ld+json">
     {
       "@context": "http://schema.org",
       "@type": "WebApplication",
-      "name": "TypingMaster - Ultimate Typing Training Platform",
-      "description": "The most advanced free typing speed test and training platform with adaptive learning, virtual keyboard guidance, and professional performance analytics",
-      "url": "https://ahmedelgamed.netlify.app/",
+      "name": "SpeedWPM - Typing Speed Test",
+      "description": "Clean, fast typing speed test with multiple text modes and real-time feedback"
+      "url": "https://speedwpm.com/",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Any",
       "offers": {
@@ -39,8 +39,7 @@
       }
     }
     </script>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="stylesheet" href="clean-styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -59,162 +58,125 @@
 <body>
     <div class="container">
         <header>
-            <h1>TypingMaster - The Ultimate Typing Training Platform</h1>
-            <p>Experience the most advanced free typing speed test with adaptive AI learning, virtual keyboard guidance, and professional analytics. Transform your typing skills today!</p>
+            <h1>SpeedWPM</h1>
             <div class="mode-toggle">
                 <label class="toggle-switch">
                     <input type="checkbox" id="enhanced-mode" checked>
                     <span class="toggle-slider"></span>
-                    <span class="toggle-label">Enhanced Mode (keybr.com style)</span>
+                    <span class="toggle-label">Enhanced Mode</span>
                 </label>
             </div>
         </header>
 
-        <div class="stats-bar">
-            <div class="stat">
-                <span class="label">WPM</span>
-                <span class="value" id="wpm">0</span>
+        <div class="typing-area">
+            <div class="stats-display">
+                <div class="stat-group">
+                    <div class="stat-item">
+                        <span class="stat-value" id="wpm">0</span>
+                        <span class="stat-label">wpm</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="accuracy">100</span>
+                        <span class="stat-label">acc</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="timer">60</span>
+                        <span class="stat-label">time</span>
+                    </div>
+                </div>
             </div>
-            <div class="stat">
-                <span class="label">Accuracy</span>
-                <span class="value" id="accuracy">100%</span>
+
+
+            <div class="text-display" id="text-display">
+                Click "Start Test" to begin typing practice
             </div>
-            <div class="stat">
-                <span class="label">Time</span>
-                <span class="value" id="timer">60s</span>
+
+            <div class="input-area">
+                <textarea 
+                    id="typing-input" 
+                    placeholder="Start typing here..." 
+                    disabled
+                ></textarea>
             </div>
-            <div class="stat">
-                <span class="label">Best WPM</span>
-                <span class="value" id="best-wpm">0</span>
+
+            <div class="controls">
+                <div class="mode-selector">
+                    <select id="difficulty-select" aria-label="Select typing test difficulty">
+                        <option value="easy">common words</option>
+                        <option value="medium" selected>mixed content</option>
+                        <option value="hard">technical text</option>
+                        <option value="quotes">famous quotes</option>
+                        <option value="numbers">numbers</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button id="start-btn" class="btn primary">start test</button>
+                    <button id="reset-btn" class="btn secondary">restart</button>
+                </div>
+                <div class="keyboard-hints">
+                    <span class="hint">Tab + Enter to restart</span>
+                    <span class="hint">Esc to focus</span>
+                    <span class="hint">Space to start</span>
+                </div>
             </div>
-        </div>
-
-        <!-- Top Banner Ad -->
-        <div class="ad-container" id="top-banner-ad">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-6754537992271927"
-                 data-ad-slot="1234567890"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-        </div>
-
-        <div class="text-display" id="text-display">
-            Click "Start Test" to begin typing practice
-        </div>
-
-        <div class="input-area">
-            <textarea 
-                id="typing-input" 
-                placeholder="Start typing here..." 
-                disabled
-            ></textarea>
-        </div>
-
-        <div class="controls">
-            <button id="start-btn" class="btn primary">Start Typing Test</button>
-            <button id="reset-btn" class="btn secondary">Reset Test</button>
-            <select id="difficulty-select" aria-label="Select typing test difficulty">
-                <option value="easy">Easy - Simple Words</option>
-                <option value="medium" selected>Medium - Mixed Content</option>
-                <option value="hard">Hard - Technical Text</option>
-            </select>
         </div>
 
         <div class="results" id="results" style="display: none;">
-            <h3>Test Results</h3>
-            <div class="result-grid">
-                <div class="result-item">
-                    <strong id="final-wpm">0</strong>
-                    <span>Words per minute</span>
+            <div class="results-summary">
+                <div class="main-result">
+                    <span class="result-value" id="final-wpm">0</span>
+                    <span class="result-label">wpm</span>
                 </div>
-                <div class="result-item">
-                    <strong id="final-accuracy">100%</strong>
-                    <span>Accuracy</span>
-                </div>
-                <div class="result-item">
-                    <strong id="final-chars">0</strong>
-                    <span>Characters typed</span>
-                </div>
-                <div class="result-item">
-                    <strong id="final-errors">0</strong>
-                    <span>Errors made</span>
+                <div class="secondary-results">
+                    <div class="result-detail">
+                        <span id="final-accuracy">100%</span>
+                        <small>accuracy</small>
+                    </div>
+                    <div class="result-detail">
+                        <span id="final-chars">0</span>
+                        <small>characters</small>
+                    </div>
+                    <div class="result-detail">
+                        <span id="final-errors">0</span>
+                        <small>errors</small>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Banner Ad -->
-        <div class="ad-container" id="bottom-banner-ad">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-6754537992271927"
-                 data-ad-slot="0987654321"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-        </div>
 
-        <nav class="internal-links">
-            <a href="#typing-test" class="nav-link">Take Test</a>
-            <a href="#features" class="nav-link">Features</a>
-            <a href="#benefits" class="nav-link">Benefits</a>
-            <a href="#tips" class="nav-link">Typing Tips</a>
-        </nav>
-
-        <section id="typing-test" class="content-section">
-            <h2>Why Choose TypingMaster?</h2>
-            <p><strong>TypingMaster</strong> is the only free typing trainer that combines AI-powered adaptive learning with professional-grade analytics. Unlike other typing tests, TypingMaster identifies your weakest keys and creates personalized practice sessions to maximize your improvement rate. Experience the difference with our <a href="#features">revolutionary training system</a>.</p>
-        </section>
-
-        <section id="features" class="content-section">
-            <h2>Revolutionary TypingMaster Features</h2>
-            <p><strong>TypingMaster</strong> goes beyond basic typing tests with cutting-edge technology:</p>
-            <ul>
-                <li><strong>AI-Powered Adaptive Learning</strong> - Smart algorithm identifies your problem keys and creates personalized lessons</li>
-                <li><strong>3D Virtual Keyboard</strong> - Real-time finger positioning guidance with visual feedback</li>
-                <li><strong>Professional Analytics Dashboard</strong> - Detailed keystroke analysis and performance tracking</li>
-                <li><strong>Multiple Training Modes</strong> - From basic letters to complex sentences with <a href="#typing-test">adaptive difficulty scaling</a></li>
-                <li><strong>Audio-Visual Feedback</strong> - Immersive learning experience with sound cues and animations</li>
-                <li><strong>Progress Persistence</strong> - Your improvement journey is saved and tracked over time</li>
-            </ul>
-        </section>
-            
-        <section id="benefits" class="content-section">
-            <h2>Benefits of Regular Typing Practice</h2>
-            <p>Consistent practice with our <strong>free typing test</strong> helps you:</p>
-            <ul>
-                <li>Increase keyboard speed and productivity</li>
-                <li>Reduce typing errors and improve accuracy</li>
-                <li>Develop muscle memory for faster typing</li>
-                <li>Enhance your overall computer skills</li>
-                <li>Boost your professional efficiency</li>
-            </ul>
-            <p>Learn more about <a href="#tips">effective typing techniques</a> to maximize your improvement.</p>
-        </section>
-
-        <section id="tips" class="content-section">
-            <h2>How to Improve Your Typing Speed</h2>
-            <p>Regular typing practice is essential for increasing your WPM (words per minute) and accuracy. Our <a href="#typing-test">free online typing test</a> provides instant feedback to help you track your progress.</p>
-            
-            <h3>Effective Typing Techniques</h3>
-            <ul>
-                <li><strong>Use proper finger positioning</strong> - Follow touch typing methods</li>
-                <li><strong>Practice regularly</strong> - Take our <a href="#typing-test">typing speed test</a> daily</li>
-                <li><strong>Focus on accuracy first</strong> - Speed will naturally follow</li>
-                <li><strong>Use all difficulty levels</strong> - Progress from easy to hard texts</li>
-                <li><strong>Maintain good posture</strong> - Sit upright with wrists straight</li>
-            </ul>
-        </section>
 
         <footer>
-            <p>Join thousands of users who have mastered touch typing with <strong>TypingMaster</strong> - the world's most advanced free typing trainer!</p>
+            <p>Improve your typing speed with <strong>SpeedWPM</strong> - clean, fast, effective.</p>
             <div class="footer-branding">
-                <p>© 2024 TypingMaster - Revolutionizing typing education through AI-powered adaptive learning</p>
+                <p>© 2024 SpeedWPM - Simple typing speed testing</p>
             </div>
         </footer>
     </div>
 
     <script src="script.js"></script>
     <script src="enhanced-script.js"></script>
+    <script>
+        // Enhanced mode toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const enhancedToggle = document.getElementById('enhanced-mode');
+            const body = document.body;
+            
+            // Set initial state
+            if (enhancedToggle.checked) {
+                body.classList.add('enhanced-mode');
+            }
+            
+            // Toggle enhanced mode
+            enhancedToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    body.classList.add('enhanced-mode');
+                } else {
+                    body.classList.remove('enhanced-mode');
+                }
+            });
+        });
+    </script>
     <script>
         // Lazy load ads when they come into view
         const initializeAds = () => {
