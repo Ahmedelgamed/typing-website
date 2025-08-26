@@ -59,12 +59,21 @@
     <div class="container">
         <header>
             <h1>SpeedWPM</h1>
-            <div class="mode-toggle">
-                <label class="toggle-switch">
-                    <input type="checkbox" id="enhanced-mode" checked>
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">Enhanced Mode</span>
-                </label>
+            <div class="header-controls">
+                <div class="mode-selector">
+                    <select id="training-mode" aria-label="Select training mode">
+                        <option value="adaptive">Adaptive Learning</option>
+                        <option value="test" selected>Typing Test</option>
+                    </select>
+                </div>
+                <div class="timer-selector">
+                    <select id="timer-select" aria-label="Select test duration">
+                        <option value="15">15s</option>
+                        <option value="30" selected>30s</option>
+                        <option value="45">45s</option>
+                        <option value="60">60s</option>
+                    </select>
+                </div>
             </div>
         </header>
 
@@ -100,7 +109,7 @@
             </div>
 
             <div class="controls">
-                <div class="mode-selector">
+                <div class="difficulty-selector">
                     <select id="difficulty-select" aria-label="Select typing test difficulty">
                         <option value="easy">common words</option>
                         <option value="medium" selected>mixed content</option>
@@ -157,24 +166,31 @@
     <script src="script.js"></script>
     <script src="enhanced-script.js"></script>
     <script>
-        // Enhanced mode toggle
         document.addEventListener('DOMContentLoaded', function() {
-            const enhancedToggle = document.getElementById('enhanced-mode');
+            const trainingModeSelect = document.getElementById('training-mode');
             const body = document.body;
             
-            // Set initial state
-            if (enhancedToggle.checked) {
-                body.classList.add('enhanced-mode');
-            }
-            
-            // Toggle enhanced mode
-            enhancedToggle.addEventListener('change', function() {
-                if (this.checked) {
-                    body.classList.add('enhanced-mode');
-                } else {
-                    body.classList.remove('enhanced-mode');
+            // Mode switching functionality
+            trainingModeSelect.addEventListener('change', function() {
+                body.classList.remove('adaptive-mode');
+                
+                if (this.value === 'adaptive') {
+                    body.classList.add('adaptive-mode');
+                }
+                
+                // Reset any active tests when switching modes
+                if (window.typingTest) {
+                    window.typingTest.resetTest();
                 }
             });
+            
+            // Initialize default mode
+            if (trainingModeSelect.value === 'adaptive') {
+                body.classList.add('adaptive-mode');
+            }
+            
+            // Make typing test globally accessible
+            window.typingTest = new TypingTest();
         });
     </script>
     <script>

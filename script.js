@@ -41,8 +41,8 @@ class TypingTest {
         this.errors = 0;
         this.isTestActive = false;
         this.timer = null;
-        this.timeLimit = 60;
-        this.timeRemaining = 60;
+        this.timeLimit = 30;
+        this.timeRemaining = 30;
         this.tabPressed = false;
         
         this.initializeElements();
@@ -56,6 +56,7 @@ class TypingTest {
         this.startBtn = document.getElementById('start-btn');
         this.resetBtn = document.getElementById('reset-btn');
         this.difficultySelect = document.getElementById('difficulty-select');
+        this.timerSelect = document.getElementById('timer-select');
         this.wpmElement = document.getElementById('wpm');
         this.accuracyElement = document.getElementById('accuracy');
         this.timerElement = document.getElementById('timer');
@@ -72,6 +73,7 @@ class TypingTest {
         this.resetBtn.addEventListener('click', () => this.resetTest());
         this.typingInput.addEventListener('input', () => this.handleInput());
         this.difficultySelect.addEventListener('change', () => this.resetTest());
+        this.timerSelect.addEventListener('change', () => this.updateTimer());
         
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
     }
@@ -126,6 +128,12 @@ class TypingTest {
             'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'
         ];
         return modifierKeys.includes(key);
+    }
+    
+    updateTimer() {
+        this.timeLimit = parseInt(this.timerSelect.value);
+        this.timeRemaining = this.timeLimit;
+        this.timerElement.textContent = this.timeLimit + 's';
     }
     
     startTest() {
@@ -184,7 +192,7 @@ class TypingTest {
     
     displayText() {
         const chars = this.currentText.split('');
-        this.textDisplay.innerHTML = chars.map((char, index) => {
+        const textContent = chars.map((char, index) => {
             let className = '';
             if (index < this.currentIndex) {
                 className = this.isCharCorrect(index) ? 'correct' : 'incorrect';
@@ -193,6 +201,16 @@ class TypingTest {
             }
             return `<span class="char ${className}">${char === ' ' ? '&nbsp;' : char}</span>`;
         }).join('');
+        
+        this.textDisplay.innerHTML = `<div class="text-content">${textContent}</div>`;
+        
+        // Add sliding animation when words are completed
+        const words = this.currentText.substring(0, this.currentIndex).split(' ');
+        if (words.length > 3 && this.currentIndex > 0) {
+            this.textDisplay.classList.add('sliding');
+        } else {
+            this.textDisplay.classList.remove('sliding');
+        }
     }
     
     isCharCorrect(index) {
