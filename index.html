@@ -40,6 +40,7 @@
     }
     </script>
     <link rel="stylesheet" href="clean-styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -62,8 +63,11 @@
             <div class="header-controls">
                 <div class="mode-selector">
                     <select id="training-mode" aria-label="Select training mode">
-                        <option value="adaptive">Adaptive Learning</option>
-                        <option value="test" selected>Typing Test</option>
+                        <option value="adaptive" selected>Smart Adaptive</option>
+                        <option value="foundation">Foundation Phase</option>
+                        <option value="application">Application Phase</option>
+                        <option value="test">Typing Test</option>
+                        <option value="custom">Custom Text</option>
                     </select>
                 </div>
                 <div class="timer-selector">
@@ -166,6 +170,17 @@
     <script src="script.js"></script>
     <script src="enhanced-script.js"></script>
     <script>
+        // Initialize enhanced trainer when in adaptive mode
+        document.addEventListener('DOMContentLoaded', function() {
+            const trainingModeSelect = document.getElementById('training-mode');
+            
+            // Check if we should start with enhanced mode
+            if (['adaptive', 'foundation', 'application', 'custom'].includes(trainingModeSelect.value)) {
+                window.enhancedTrainer = new EnhancedTypingTrainer();
+            }
+        });
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const trainingModeSelect = document.getElementById('training-mode');
             const body = document.body;
@@ -174,23 +189,50 @@
             trainingModeSelect.addEventListener('change', function() {
                 body.classList.remove('adaptive-mode');
                 
-                if (this.value === 'adaptive') {
+                // Show enhanced features for adaptive modes
+                if (['adaptive', 'foundation', 'application', 'custom'].includes(this.value)) {
                     body.classList.add('adaptive-mode');
                 }
                 
+                // Switch between trainers based on mode
+                if (['adaptive', 'foundation', 'application', 'custom'].includes(this.value)) {
+                    // Switch to enhanced trainer
+                    if (!window.enhancedTrainer) {
+                        window.enhancedTrainer = new EnhancedTypingTrainer();
+                    }
+                    window.typingTest = window.enhancedTrainer;
+                    if (window.enhancedTrainer.generateAdaptiveText) {
+                        window.enhancedTrainer.generateAdaptiveText();
+                    }
+                } else {
+                    // Switch to basic trainer
+                    if (!window.basicTypingTest) {
+                        window.basicTypingTest = new TypingTest();
+                    }
+                    window.typingTest = window.basicTypingTest;
+                }
+                
                 // Reset any active tests when switching modes
-                if (window.typingTest) {
+                if (window.typingTest && window.typingTest.resetTest) {
                     window.typingTest.resetTest();
+                } else if (window.typingTest && window.typingTest.resetSession) {
+                    window.typingTest.resetSession();
                 }
             });
             
             // Initialize default mode
-            if (trainingModeSelect.value === 'adaptive') {
+            if (['adaptive', 'foundation', 'application', 'custom'].includes(trainingModeSelect.value)) {
                 body.classList.add('adaptive-mode');
             }
             
-            // Make typing test globally accessible
-            window.typingTest = new TypingTest();
+            // Initialize appropriate trainer based on mode
+            const currentMode = trainingModeSelect.value;
+            if (['adaptive', 'foundation', 'application', 'custom'].includes(currentMode)) {
+                window.enhancedTrainer = new EnhancedTypingTrainer();
+                window.typingTest = window.enhancedTrainer;
+            } else {
+                window.typingTest = new TypingTest();
+            }
         });
     </script>
     <script>

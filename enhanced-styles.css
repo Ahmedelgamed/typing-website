@@ -602,6 +602,232 @@ html {
     outline-offset: 2px;
 }
 
+/* Letter Progression Chart */
+.progression-chart {
+    padding: 15px 0;
+}
+
+.progression-letters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.progression-letter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 60px;
+    justify-content: center;
+}
+
+.progression-letter.locked {
+    background: linear-gradient(145deg, rgba(75, 85, 99, 0.3), rgba(55, 65, 81, 0.3));
+    border: 1px solid rgba(75, 85, 99, 0.5);
+    opacity: 0.5;
+}
+
+.progression-letter.unlocked {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.3));
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    animation: letterPulse 2s ease-in-out infinite;
+}
+
+.progression-letter.mastered {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.4), rgba(5, 150, 105, 0.4));
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.progression-letter .letter {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--light-gray);
+    margin-bottom: 4px;
+}
+
+.progression-letter.mastered .letter {
+    color: var(--success-color);
+}
+
+.progression-letter.unlocked .letter {
+    color: var(--secondary-color);
+}
+
+.letter-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.letter-stats small {
+    font-size: 0.7rem;
+    color: var(--gray);
+    line-height: 1;
+}
+
+.progression-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--light-gray);
+    font-size: 0.8rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.legend-color.locked {
+    background: linear-gradient(145deg, rgba(75, 85, 99, 0.5), rgba(55, 65, 81, 0.5));
+}
+
+.legend-color.unlocked {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.5), rgba(37, 99, 235, 0.5));
+}
+
+.legend-color.mastered {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.6), rgba(5, 150, 105, 0.6));
+}
+
+@keyframes letterPulse {
+    0%, 100% { 
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+/* Phase Requirements */
+.phase-requirements {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(0, 212, 255, 0.1));
+    border-radius: 8px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    font-size: 0.85rem;
+    color: var(--light-gray);
+    text-align: center;
+}
+
+.phase-requirements strong {
+    color: var(--secondary-color);
+}
+
+/* Custom Text Button */
+.settings .btn {
+    padding: 8px 16px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 6px;
+    background: linear-gradient(145deg, rgba(26, 31, 58, 0.8), rgba(10, 14, 39, 0.8));
+    color: var(--light-gray);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.settings .btn:hover {
+    border-color: var(--secondary-color);
+    background: linear-gradient(145deg, rgba(0, 212, 255, 0.1), rgba(139, 92, 246, 0.1));
+    color: var(--secondary-color);
+}
+
+/* Notification Styles */
+.notification {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Enhanced Stats Grid for Mobile */
+@media (max-width: 768px) {
+    .progression-letters {
+        grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+        gap: 6px;
+    }
+    
+    .progression-letter {
+        min-height: 50px;
+        padding: 6px 3px;
+    }
+    
+    .progression-letter .letter {
+        font-size: 1rem;
+    }
+    
+    .letter-stats small {
+        font-size: 0.6rem;
+    }
+    
+    .progression-legend {
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        font-size: 0.75rem;
+    }
+    
+    .phase-requirements {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .progression-letters {
+        grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
+        gap: 4px;
+    }
+    
+    .progression-letter {
+        min-height: 45px;
+        padding: 4px 2px;
+    }
+    
+    .progression-letter .letter {
+        font-size: 0.9rem;
+    }
+    
+    .legend-item {
+        font-size: 0.7rem;
+    }
+    
+    .legend-color {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* Enhanced mode visibility controls */
+body:not(.adaptive-mode) .virtual-keyboard,
+body:not(.adaptive-mode) .enhanced-controls,
+body:not(.adaptive-mode) .detailed-stats {
+    display: none;
+}
+
+body.adaptive-mode .virtual-keyboard,
+body.adaptive-mode .enhanced-controls {
+    display: block;
+}
+
 /* Custom scrollbar for better aesthetics */
 ::-webkit-scrollbar {
     width: 8px;

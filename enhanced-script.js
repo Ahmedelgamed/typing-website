@@ -36,6 +36,17 @@ class EnhancedTypingTrainer {
         this.sessionKeystrokes = [];
         this.isActive = false;
         
+        // Keybr-style letter progression
+        this.homeRowLetters = ['a', 's', 'd', 'f', 'j', 'k', 'l', ';'];
+        this.letterProgression = ['f', 'j', 'd', 'k', 's', 'l', 'a', ';', 'g', 'h', 'e', 'i', 'r', 'u', 'o', 't', 'n', 'v', 'c', 'm', 'w', 'b', 'p', 'y', 'x', 'q', 'z'];
+        this.unlockedLetters = this.getUnlockedLetters();
+        this.letterMastery = this.loadLetterMastery();
+        
+        // Practice phases
+        this.currentPhase = this.getCurrentPhase(); // 'foundation' or 'application'
+        this.targetWPM = 15; // Minimum WPM to progress
+        this.targetAccuracy = 95; // Minimum accuracy to progress
+        
         // Real-time metrics
         this.wpm = 0;
         this.accuracy = 100;
@@ -137,16 +148,21 @@ class EnhancedTypingTrainer {
             <div class="training-mode">
                 <label>Training Mode:</label>
                 <select id="training-mode">
-                    <option value="adaptive">Adaptive Learning</option>
+                    <option value="adaptive">Smart Adaptive</option>
+                    <option value="foundation">Foundation Phase (Keybr-style)</option>
+                    <option value="application">Application Phase (Monkeytype-style)</option>
                     <option value="letters">Letters Only</option>
                     <option value="words">Common Words</option>
                     <option value="sentences">Full Sentences</option>
+                    <option value="custom">Custom Text</option>
                 </select>
             </div>
             <div class="settings">
                 <label><input type="checkbox" id="sound-toggle" checked> Sound Effects</label>
                 <label><input type="checkbox" id="show-keyboard" checked> Show Keyboard</label>
                 <label><input type="checkbox" id="show-next" checked> Show Next Characters</label>
+                <label><input type="checkbox" id="auto-progression" checked> Auto Phase Progression</label>
+                <button id="custom-text-btn" class="btn secondary">Set Custom Text</button>
             </div>
             <div class="progress-indicators">
                 <div class="progress-item">
@@ -156,9 +172,15 @@ class EnhancedTypingTrainer {
                     </div>
                 </div>
                 <div class="progress-item">
-                    <span class="label">Key Mastery</span>
+                    <span class="label">Letter Progression (<span id="unlocked-count">0</span>/27)</span>
                     <div class="progress-bar">
-                        <div class="progress-fill" id="mastery-progress"></div>
+                        <div class="progress-fill" id="letter-progress"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <span class="label">Current Phase: <span id="phase-indicator">Foundation</span></span>
+                    <div class="phase-requirements" id="phase-requirements">
+                        Target: 15+ WPM, 95%+ Accuracy
                     </div>
                 </div>
             </div>
@@ -181,6 +203,10 @@ class EnhancedTypingTrainer {
                     <div id="problem-keys" class="key-list"></div>
                 </div>
                 <div class="stat-card">
+                    <h4>Letter Progression</h4>
+                    <div id="letter-progression-chart" class="progression-chart"></div>
+                </div>
+                <div class="stat-card">
                     <h4>Speed Trend</h4>
                     <div id="speed-trend" class="mini-chart"></div>
                 </div>
@@ -197,9 +223,15 @@ class EnhancedTypingTrainer {
     
     generateAdaptiveText() {
         const mode = document.getElementById('training-mode')?.value || 'adaptive';
-        const length = 50; // Number of characters to generate
+        const length = 50;
         
         switch(mode) {
+            case 'foundation':
+                this.currentText = this.generateFoundationPractice(length);
+                break;
+            case 'application':
+                this.currentText = this.generateApplicationPractice(length);
+                break;
             case 'letters':
                 this.currentText = this.generateLetterPractice(length);
                 break;
@@ -209,37 +241,153 @@ class EnhancedTypingTrainer {
             case 'sentences':
                 this.currentText = this.generateSentencePractice();
                 break;
-            default: // adaptive
-                this.currentText = this.generateAdaptivePractice(length);
+            case 'custom':
+                this.currentText = this.generateCustomPractice();
+                break;
+            default: // adaptive - automatically choose phase
+                this.currentText = this.currentPhase === 'foundation' ? 
+                    this.generateFoundationPractice(length) : 
+                    this.generateApplicationPractice(length);
         }
         
         this.displayText();
         this.highlightNextChars();
+        this.updatePhaseIndicator();
     }
     
-    generateAdaptivePractice(length) {
-        // Focus on problematic keys with weighted probability
+    generateFoundationPractice(length) {
+        // Keybr-style systematic progression
         let text = '';
-        let focusKeys = this.getFocusKeys().slice(0, 5); // Top 5 problem keys
+        const availableLetters = this.unlockedLetters.slice();
+        
+        // Focus heavily on the most recently unlocked letter
+        const latestLetter = availableLetters[availableLetters.length - 1];
+        const problemLetters = this.getProblemLetters();
         
         for (let i = 0; i < length; i++) {
-            if (Math.random() < 0.7 && focusKeys.length > 0) {
-                // 70% chance to use focus keys
-                text += focusKeys[Math.floor(Math.random() * focusKeys.length)];
+            let selectedLetter;
+            
+            if (Math.random() < 0.4 && latestLetter) {
+                // 40% chance to use latest unlocked letter
+                selectedLetter = latestLetter;
+            } else if (Math.random() < 0.3 && problemLetters.length > 0) {
+                // 30% chance to use problem letters
+                selectedLetter = problemLetters[Math.floor(Math.random() * problemLetters.length)];
             } else {
-                // Use common letters
-                const letters = 'etaoinshrdlcumwfgypbvkjxqz';
-                text += letters[Math.floor(Math.random() * letters.length)];
+                // Use any available letter
+                selectedLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
             }
             
-            // Add spaces occasionally
-            if (i > 0 && Math.random() < 0.15) {
+            text += selectedLetter;
+            
+            // Add spaces less frequently in foundation phase
+            if (i > 0 && Math.random() < 0.1) {
                 text += ' ';
-                i++; // Count space as character
+                i++;
             }
         }
         
         return text.trim();
+    }
+    
+    generateApplicationPractice(length) {
+        // Monkeytype-style real-world content
+        const practiceTypes = ['common-words', 'sentences', 'quotes', 'programming'];
+        const type = practiceTypes[Math.floor(Math.random() * practiceTypes.length)];
+        
+        switch(type) {
+            case 'common-words':
+                return this.generateSmartWordPractice(length);
+            case 'sentences':
+                return this.generateSmartSentencePractice();
+            case 'quotes':
+                return this.getRandomQuote();
+            case 'programming':
+                return this.generateProgrammingPractice();
+            default:
+                return this.generateSmartWordPractice(length);
+        }
+    }
+    
+    generateSmartWordPractice(length) {
+        // Use real words but emphasize weak letters
+        const commonWords = [
+            'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had',
+            'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his',
+            'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'its',
+            'said', 'each', 'make', 'most', 'over', 'such', 'very', 'what', 'with',
+            'have', 'from', 'they', 'know', 'want', 'been', 'good', 'much', 'some',
+            'time', 'will', 'year', 'your', 'when', 'come', 'could', 'there'
+        ];
+        
+        const problemLetters = this.getProblemLetters();
+        let text = '';
+        
+        while (text.length < length) {
+            let selectedWord;
+            
+            if (problemLetters.length > 0 && Math.random() < 0.6) {
+                // 60% chance to select words containing problem letters
+                const wordsWithProblems = commonWords.filter(word => 
+                    problemLetters.some(letter => word.includes(letter))
+                );
+                selectedWord = wordsWithProblems.length > 0 ? 
+                    wordsWithProblems[Math.floor(Math.random() * wordsWithProblems.length)] :
+                    commonWords[Math.floor(Math.random() * commonWords.length)];
+            } else {
+                selectedWord = commonWords[Math.floor(Math.random() * commonWords.length)];
+            }
+            
+            text += (text ? ' ' : '') + selectedWord;
+        }
+        
+        return text.substring(0, length);
+    }
+    
+    generateSmartSentencePractice() {
+        const sentences = [
+            "The quick brown fox jumps over the lazy dog.",
+            "She sells seashells by the seashore.",
+            "A journey of a thousand miles begins with a single step.",
+            "Practice makes perfect when you focus on your weak areas.",
+            "Every expert was once a beginner who never gave up.",
+            "The best time to plant a tree was twenty years ago.",
+            "Technology is best when it brings people together.",
+            "Innovation distinguishes between a leader and a follower.",
+            "Quality is not an act but a habit we develop over time.",
+            "Success is the result of preparation meeting opportunity."
+        ];
+        
+        return sentences[Math.floor(Math.random() * sentences.length)];
+    }
+    
+    getRandomQuote() {
+        const quotes = [
+            "Be yourself; everyone else is already taken. - Oscar Wilde",
+            "Two things are infinite: the universe and human stupidity. - Einstein",
+            "The only way to do great work is to love what you do. - Steve Jobs",
+            "Life is what happens to you while you're busy making other plans. - Lennon",
+            "The future belongs to those who believe in their dreams. - Roosevelt"
+        ];
+        
+        return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+    
+    generateProgrammingPractice() {
+        const codeSnippets = [
+            "function calculateSum(a, b) { return a + b; }",
+            "const array = [1, 2, 3]; array.map(x => x * 2);",
+            "if (condition === true) { console.log('Hello World'); }",
+            "for (let i = 0; i < length; i++) { process(data[i]); }",
+            "const obj = { name: 'John', age: 30, city: 'New York' };"
+        ];
+        
+        return codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+    }
+    
+    generateCustomPractice() {
+        const customText = localStorage.getItem('customPracticeText');
+        return customText || 'Click settings to add your custom practice text.';
     }
     
     generateLetterPractice(length) {
@@ -357,8 +505,22 @@ class EnhancedTypingTrainer {
         document.getElementById('reset-btn')?.addEventListener('click', () => this.resetSession());
         
         // Mode changes
-        document.getElementById('training-mode')?.addEventListener('change', () => {
+        document.getElementById('training-mode')?.addEventListener('change', (e) => {
+            if (e.target.value === 'foundation' || e.target.value === 'application') {
+                this.currentPhase = e.target.value;
+                this.saveCurrentPhase();
+            }
             this.generateAdaptiveText();
+        });
+        
+        // Custom text button
+        document.getElementById('custom-text-btn')?.addEventListener('click', () => {
+            this.showCustomTextDialog();
+        });
+        
+        // Auto progression toggle
+        document.getElementById('auto-progression')?.addEventListener('change', (e) => {
+            localStorage.setItem('autoProgression', e.target.checked.toString());
         });
         
         // Settings toggles
@@ -452,10 +614,12 @@ class EnhancedTypingTrainer {
     completeSession() {
         this.isActive = false;
         const endTime = Date.now();
-        const duration = (endTime - this.startTime) / 1000; // seconds
+        const duration = (endTime - this.startTime) / 1000;
         
         this.calculateResults(duration);
         this.updateKeyStats();
+        this.updateLetterMastery();
+        this.checkPhaseProgression();
         this.saveProgress();
         this.showDetailedResults();
         
@@ -527,17 +691,226 @@ class EnhancedTypingTrainer {
     }
     
     getFocusKeys() {
-        // Return keys that need the most practice
-        const keyAccuracy = {};
+        return this.getProblemLetters();
+    }
+    
+    getProblemLetters() {
+        // Return letters that need the most practice from unlocked set
+        const letterAccuracy = {};
         
-        Object.entries(this.keyStats).forEach(([key, stats]) => {
-            keyAccuracy[key] = stats.accuracy || 0;
+        this.unlockedLetters.forEach(letter => {
+            const stats = this.keyStats[letter];
+            letterAccuracy[letter] = stats ? stats.accuracy || 0 : 0;
         });
         
-        // Sort by lowest accuracy, return problematic keys
-        return Object.keys(keyAccuracy)
-            .sort((a, b) => keyAccuracy[a] - keyAccuracy[b])
-            .slice(0, 10);
+        return Object.keys(letterAccuracy)
+            .sort((a, b) => letterAccuracy[a] - letterAccuracy[b])
+            .slice(0, 5);
+    }
+    
+    getUnlockedLetters() {
+        const saved = localStorage.getItem('unlockedLetters');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        // Start with first 4 letters of progression
+        return this.letterProgression.slice(0, 4);
+    }
+    
+    saveUnlockedLetters() {
+        localStorage.setItem('unlockedLetters', JSON.stringify(this.unlockedLetters));
+    }
+    
+    getCurrentPhase() {
+        const saved = localStorage.getItem('currentPhase');
+        const autoProgression = localStorage.getItem('autoProgression') !== 'false';
+        
+        if (!autoProgression) {
+            return saved || 'foundation';
+        }
+        
+        // Auto-determine phase based on progress
+        const masteredCount = this.unlockedLetters.filter(letter => {
+            const stats = this.keyStats[letter];
+            return stats && stats.accuracy >= this.targetAccuracy && 
+                   stats.speed >= this.targetWPM * 5; // Convert WPM to CPM
+        }).length;
+        
+        const totalUnlocked = this.unlockedLetters.length;
+        const masteryRatio = masteredCount / totalUnlocked;
+        
+        // Switch to application phase when 70% of letters are mastered
+        return (masteryRatio >= 0.7 && totalUnlocked >= 15) ? 'application' : 'foundation';
+    }
+    
+    saveCurrentPhase() {
+        localStorage.setItem('currentPhase', this.currentPhase);
+    }
+    
+    updateLetterMastery() {
+        this.unlockedLetters.forEach(letter => {
+            if (!this.letterMastery[letter]) {
+                this.letterMastery[letter] = { accuracy: 0, speed: 0, attempts: 0 };
+            }
+            
+            const stats = this.keyStats[letter];
+            if (stats) {
+                this.letterMastery[letter] = {
+                    accuracy: stats.accuracy || 0,
+                    speed: stats.speed || 0,
+                    attempts: stats.total || 0
+                };
+            }
+        });
+        
+        this.saveLetterMastery();
+    }
+    
+    checkPhaseProgression() {
+        const autoProgression = localStorage.getItem('autoProgression') !== 'false';
+        if (!autoProgression) return;
+        
+        // Check if we should unlock new letters (Foundation phase)
+        if (this.currentPhase === 'foundation') {
+            this.checkLetterUnlock();
+        }
+        
+        // Check if we should progress to Application phase
+        const newPhase = this.getCurrentPhase();
+        if (newPhase !== this.currentPhase) {
+            this.currentPhase = newPhase;
+            this.saveCurrentPhase();
+            this.showPhaseProgressionMessage();
+        }
+    }
+    
+    checkLetterUnlock() {
+        const latestLetter = this.unlockedLetters[this.unlockedLetters.length - 1];
+        const stats = this.keyStats[latestLetter];
+        
+        if (stats && stats.accuracy >= this.targetAccuracy && 
+            stats.speed >= this.targetWPM * 5 && stats.total >= 20) {
+            
+            // Check if there are more letters to unlock
+            const nextLetterIndex = this.letterProgression.indexOf(latestLetter) + 1;
+            if (nextLetterIndex < this.letterProgression.length) {
+                const nextLetter = this.letterProgression[nextLetterIndex];
+                this.unlockedLetters.push(nextLetter);
+                this.saveUnlockedLetters();
+                this.showLetterUnlockMessage(nextLetter);
+            }
+        }
+    }
+    
+    showPhaseProgressionMessage() {
+        const message = this.currentPhase === 'application' ? 
+            'Congratulations! You\'ve progressed to Application Phase - now practicing with real-world content!' :
+            'Welcome to Foundation Phase - focus on mastering individual letters and combinations!';
+            
+        this.showNotification(message, 'success');
+    }
+    
+    showLetterUnlockMessage(letter) {
+        this.showNotification(`New letter unlocked: ${letter.toUpperCase()}! Keep practicing to master it.`, 'info');
+    }
+    
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        
+        if (type === 'success') {
+            notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        } else if (type === 'info') {
+            notification.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+        }
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    }
+    
+    updatePhaseIndicator() {
+        const phaseElement = document.getElementById('phase-indicator');
+        const requirementsElement = document.getElementById('phase-requirements');
+        
+        if (phaseElement) {
+            phaseElement.textContent = this.currentPhase === 'foundation' ? 'Foundation' : 'Application';
+        }
+        
+        if (requirementsElement) {
+            if (this.currentPhase === 'foundation') {
+                const nextLetter = this.getNextLetterToUnlock();
+                requirementsElement.innerHTML = nextLetter ? 
+                    `Master <strong>${nextLetter.toUpperCase()}</strong>: ${this.targetWPM}+ WPM, ${this.targetAccuracy}%+ Accuracy` :
+                    'All letters unlocked! Ready for Application Phase';
+            } else {
+                requirementsElement.innerHTML = 'Focus on real-world typing practice and flow';
+            }
+        }
+        
+        const unlockedCount = document.getElementById('unlocked-count');
+        if (unlockedCount) {
+            unlockedCount.textContent = this.unlockedLetters.length;
+        }
+        
+        const letterProgress = document.getElementById('letter-progress');
+        if (letterProgress) {
+            const progress = (this.unlockedLetters.length / this.letterProgression.length) * 100;
+            letterProgress.style.width = progress + '%';
+        }
+    }
+    
+    getNextLetterToUnlock() {
+        const currentIndex = this.letterProgression.indexOf(this.unlockedLetters[this.unlockedLetters.length - 1]);
+        return currentIndex >= 0 && currentIndex < this.letterProgression.length - 1 ? 
+            this.letterProgression[currentIndex + 1] : null;
+    }
+    
+    showCustomTextDialog() {
+        const currentText = localStorage.getItem('customPracticeText') || '';
+        const newText = prompt('Enter your custom practice text:', currentText);
+        
+        if (newText !== null) {
+            localStorage.setItem('customPracticeText', newText);
+            if (document.getElementById('training-mode').value === 'custom') {
+                this.generateAdaptiveText();
+            }
+        }
+    }
+    
+    loadLetterMastery() {
+        const saved = localStorage.getItem('letterMastery');
+        return saved ? JSON.parse(saved) : {};
+    }
+    
+    saveLetterMastery() {
+        localStorage.setItem('letterMastery', JSON.stringify(this.letterMastery));
     }
     
     updateKeyStats() {
@@ -664,6 +1037,12 @@ class EnhancedTypingTrainer {
                 </div>`
             ).join('');
         }
+        
+        // Update letter progression chart
+        const progressionElement = document.getElementById('letter-progression-chart');
+        if (progressionElement) {
+            this.updateLetterProgressionChart(progressionElement);
+        }
     }
     
     calculateFingerAccuracy() {
@@ -727,6 +1106,39 @@ class EnhancedTypingTrainer {
         return allAccuracies.length > 0 ? 
             allAccuracies.reduce((a, b) => a + b, 0) / allAccuracies.length : 0;
     }
+    
+    updateLetterProgressionChart(element) {
+        const chartHtml = this.letterProgression.map((letter, index) => {
+            const isUnlocked = this.unlockedLetters.includes(letter);
+            const stats = this.keyStats[letter];
+            const isMastered = stats && stats.accuracy >= this.targetAccuracy && stats.speed >= this.targetWPM * 5;
+            
+            let className = 'progression-letter ';
+            if (!isUnlocked) className += 'locked';
+            else if (isMastered) className += 'mastered';
+            else className += 'unlocked';
+            
+            const accuracy = stats ? Math.round(stats.accuracy || 0) : 0;
+            const speed = stats ? Math.round((stats.speed || 0) / 5) : 0; // Convert CPM to WPM
+            
+            return `<div class="${className}" title="${letter.toUpperCase()}: ${accuracy}% accuracy, ${speed} WPM">
+                <span class="letter">${letter.toUpperCase()}</span>
+                <div class="letter-stats">
+                    <small>${accuracy}%</small>
+                    <small>${speed}wpm</small>
+                </div>
+            </div>`;
+        }).join('');
+        
+        element.innerHTML = `
+            <div class="progression-letters">${chartHtml}</div>
+            <div class="progression-legend">
+                <span class="legend-item"><div class="legend-color locked"></div>Locked</span>
+                <span class="legend-item"><div class="legend-color unlocked"></div>Practicing</span>
+                <span class="legend-item"><div class="legend-color mastered"></div>Mastered</span>
+            </div>
+        `;
+    }
 }
 
 // Mode switching logic
@@ -772,6 +1184,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize with saved preference
     initializeTrainer(useEnhanced);
+    
+    // Set auto-progression checkbox state
+    const autoProgressionToggle = document.getElementById('auto-progression');
+    if (autoProgressionToggle) {
+        const autoProgression = localStorage.getItem('autoProgression') !== 'false';
+        autoProgressionToggle.checked = autoProgression;
+    }
     
     // Add cleanup method to TypingTest class
     if (typeof TypingTest !== 'undefined' && !TypingTest.prototype.cleanup) {
