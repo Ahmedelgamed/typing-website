@@ -17,6 +17,53 @@ class EnhancedTypingTrainer {
         this.commonBigrams = ['th', 'he', 'in', 'er', 're', 'an', 'nd', 'at', 'on', 'nt', 'ha', 'es', 'st', 'en', 'ed', 'to', 'it', 'ou', 'ea', 'hi'];
         this.commonTrigrams = ['the', 'and', 'ing', 'her', 'hat', 'his', 'tha', 'ere', 'for', 'ent', 'ion', 'ter', 'was', 'you', 'ith', 'ver', 'all', 'wit', 'thi', 'tio'];
         
+        // Fun Language Mode Libraries
+        this.languageModes = {
+            fancyEnglish: [
+                'exquisite', 'magnificent', 'extraordinary', 'sophisticated', 'remarkable', 'phenomenal',
+                'stupendous', 'marvelous', 'exceptional', 'splendid', 'sublime', 'transcendent',
+                'quintessential', 'impeccable', 'resplendent', 'effervescent', 'serendipitous',
+                'euphonious', 'mellifluous', 'scintillating', 'vivacious', 'ebullient',
+                'perspicacious', 'sagacious', 'magnanimous', 'benevolent', 'eloquent',
+                'articulate', 'erudite', 'intellectual', 'contemplative', 'philosophical'
+            ],
+            tikTokSlang: [
+                'slay queen', 'periodt', 'no cap', 'fr fr', 'its giving', 'main character energy',
+                'understood the assignment', 'that hits different', 'lowkey highkey', 'vibe check',
+                'say less', 'bet', 'facts', 'bussin', 'sheesh', 'fire', 'slaps', 'mid',
+                'sending me', 'touch grass', 'ratio', 'based', 'cringe', 'Stan', 'simp',
+                'hits different', 'the way for me', 'not me', 'bestie', 'sis', 'bro',
+                'valid', 'unmatched', 'iconic', 'legend', 'queen', 'king'
+            ],
+            aussieSlang: [
+                'fair dinkum mate', 'no worries', 'she\'ll be right', 'good on ya', 'bloody hell',
+                'strewth', 'crikey', 'bonkers', 'ripper', 'beaut', 'ace', 'grouse',
+                'chockers', 'arvo', 'servo', 'bottle-o', 'maccas', 'brekkie', 'bikkie',
+                'mozzie', 'tradie', 'postie', 'garbo', 'ambo', 'firie', 'coppers',
+                'dunny', 'esky', 'ute', 'thongs', 'singlet', 'sunnies', 'boardies',
+                'togs', 'rashie', 'stubbie', 'tinnie', 'longneck', 'grog', 'piss'
+            ],
+            ukCoolPhrases: [
+                'absolutely mental', 'proper mad', 'well good', 'dead nice', 'bare jokes',
+                'peng ting', 'safe bruv', 'innit though', 'peak times', 'long ting',
+                'calm down', 'allow it', 'wasteman', 'roadman', 'endz', 'mandem',
+                'gyaldem', 'bare minimum', 'maximum effort', 'standard procedure',
+                'top drawer', 'first class', 'spot on', 'bang on', 'ace move',
+                'smashed it', 'nailed it', 'sorted', 'cushty', 'sound as a pound',
+                'mint condition', 'proper lush', 'well posh', 'dead posh'
+            ],
+            britishExpressions: [
+                'bloody brilliant', 'absolutely bonkers', 'utterly mad', 'quite extraordinary',
+                'rather splendid', 'frightfully good', 'terribly sorry', 'awfully nice',
+                'jolly good show', 'old bean', 'what a palaver', 'bit of a pickle',
+                'over the moon', 'chuffed to bits', 'taking the mickey', 'having a laugh',
+                'pull the other one', 'stone the crows', 'blimey charlie', 'gordon bennett',
+                'bob\'s your uncle', 'fanny\'s your aunt', 'tickety boo', 'hunky dory',
+                'right as rain', 'fit as a fiddle', 'happy as larry', 'pleased as punch',
+                'keen as mustard', 'mad as a hatter', 'daft as a brush'
+            ]
+        };
+        
         // Finger-to-key mapping for visual guidance
         this.fingerMap = {
             'q': 'left-pinky', 'w': 'left-ring', 'e': 'left-middle', 'r': 'left-index', 't': 'left-index',
@@ -627,9 +674,9 @@ class EnhancedTypingTrainer {
         this.displayText();
         this.updateProgress();
         
-        // Check for completion
+        // Check for completion and add more text dynamically
         if (this.currentIndex >= this.currentText.length) {
-            this.completeSession();
+            this.addMoreText();
         }
     }
     
@@ -1578,6 +1625,72 @@ class EnhancedTypingTrainer {
                 });
             }
         }
+    }
+    
+    addMoreText() {
+        // Add more text dynamically when current text is completed
+        const difficulty = document.getElementById('difficulty-select')?.value || 'medium';
+        let additionalText = '';
+        
+        // Generate new text based on current mode
+        if (this.languageModes[difficulty]) {
+            // Use fun language mode
+            const words = this.languageModes[difficulty];
+            const numWords = Math.floor(Math.random() * 3) + 2; // 2-4 words
+            const selectedWords = [];
+            
+            for (let i = 0; i < numWords; i++) {
+                const randomWord = words[Math.floor(Math.random() * words.length)];
+                selectedWords.push(randomWord);
+            }
+            
+            additionalText = ' ' + selectedWords.join(' ');
+        } else {
+            // Use traditional difficulty modes
+            const mode = document.getElementById('training-mode')?.value || 'adaptive';
+            if (mode === 'foundation') {
+                additionalText = ' ' + this.generateFoundationPractice(20).replace(/\s+/g, ' ');
+            } else {
+                additionalText = ' ' + this.generateApplicationPractice(30).split(' ').slice(0, 5).join(' ');
+            }
+        }
+        
+        // Extend current text
+        this.currentText += additionalText;
+        
+        // Update display with smooth animation
+        this.displayText();
+        
+        // Show notification about added text
+        this.showAddTextNotification(additionalText.trim());
+    }
+    
+    showAddTextNotification(addedText) {
+        const notification = document.createElement('div');
+        notification.className = 'added-text-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">➕</span>
+                <span class="notification-text">Added: "${addedText.substring(0, 30)}${addedText.length > 30 ? '...' : ''}"</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.add('visible');
+        }, 50);
+        
+        // Auto remove
+        setTimeout(() => {
+            notification.classList.remove('visible');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 2500);
     }
     
     updateAdvancedAnalytics() {

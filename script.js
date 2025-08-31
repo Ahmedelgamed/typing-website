@@ -31,6 +31,32 @@ class TypingTest {
                 "Password: Aa1!Bb2@Cc3#Dd4$ - Remember these 16 characters exactly as shown with symbols.",
                 "Invoice #INV-2024-0789: $1,250.50 due by 01/15/2024. Account: 555-123-4567-8901.",
                 "IP Address: 192.168.1.1 Port: 8080 Connection established at 14:30:45 GMT+5."
+            ],
+            // Fun Language Modes
+            fancyEnglish: [
+                "exquisite magnificent extraordinary sophisticated remarkable phenomenal stupendous marvelous exceptional splendid sublime transcendent",
+                "quintessential impeccable resplendent effervescent serendipitous euphonious mellifluous scintillating vivacious ebullient perspicacious",
+                "sagacious magnanimous benevolent eloquent articulate erudite intellectual contemplative philosophical transcendental magnificent"
+            ],
+            tikTokSlang: [
+                "slay queen periodt no cap fr fr its giving main character energy understood the assignment that hits different",
+                "lowkey highkey vibe check say less bet facts bussin sheesh fire slaps mid sending me touch grass ratio based",
+                "cringe stan simp hits different the way for me not me bestie sis bro valid unmatched iconic legend queen king"
+            ],
+            aussieSlang: [
+                "fair dinkum mate no worries she'll be right good on ya bloody hell strewth crikey bonkers ripper beaut ace grouse",
+                "chockers arvo servo bottle-o maccas brekkie bikkie mozzie tradie postie garbo ambo firie coppers dunny esky",
+                "ute thongs singlet sunnies boardies togs rashie stubbie tinnie longneck grog she's apples too right mate"
+            ],
+            ukCoolPhrases: [
+                "absolutely mental proper mad well good dead nice bare jokes peng ting safe bruv innit though peak times long ting",
+                "calm down allow it wasteman roadman endz mandem gyaldem bare minimum maximum effort standard procedure top drawer",
+                "first class spot on bang on ace move smashed it nailed it sorted cushty sound as a pound mint condition proper lush"
+            ],
+            britishExpressions: [
+                "bloody brilliant absolutely bonkers utterly mad quite extraordinary rather splendid frightfully good terribly sorry awfully nice",
+                "jolly good show old bean what a palaver bit of a pickle over the moon chuffed to bits taking the mickey having a laugh",
+                "pull the other one stone the crows blimey charlie gordon bennett bob's your uncle fanny's your aunt tickety boo hunky dory"
             ]
         };
         
