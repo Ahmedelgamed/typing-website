@@ -445,12 +445,11 @@ class EnhancedTypingTrainer {
         const textDisplay = document.getElementById('text-display');
         
         // Performance optimization: use DocumentFragment for batch DOM updates
-        const fragment = document.createDocumentFragment();
         const chars = this.currentText.split('');
         
         // Use requestAnimationFrame for smooth rendering
         requestAnimationFrame(() => {
-            // Create optimized HTML string instead of DOM manipulation
+            // Create optimized HTML string with proper text content wrapper
             const htmlChunks = [];
             
             for (let index = 0; index < chars.length; index++) {
@@ -466,11 +465,26 @@ class EnhancedTypingTrainer {
                     className += ' next';
                 }
                 
-                htmlChunks.push(`<span class="${className}" data-index="${index}">${char === ' ' ? '&nbsp;' : char}</span>`);
+                // Handle special characters properly
+                let displayChar = char;
+                if (char === ' ') {
+                    displayChar = '&nbsp;';
+                } else if (char === '\n') {
+                    displayChar = '<br>';
+                } else {
+                    displayChar = char.replace(/[<>&"']/g, (match) => {
+                        const escapeMap = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' };
+                        return escapeMap[match];
+                    });
+                }
+                
+                htmlChunks.push(`<span class="${className}" data-index="${index}">${displayChar}</span>`);
             }
             
-            textDisplay.innerHTML = htmlChunks.join('');
+            // Wrap in text-content div for better styling control
+            textDisplay.innerHTML = `<div class="text-content">${htmlChunks.join('')}</div>`;
             this.updateKeyboardHighlight();
+            this.ensureCurrentCharVisible();
         });
     }
     
@@ -1542,6 +1556,28 @@ class EnhancedTypingTrainer {
     getHistoricalStats(letter) {
         const saved = localStorage.getItem(`letterHistory_${letter}`);
         return saved ? JSON.parse(saved) : [];
+    }
+    
+    ensureCurrentCharVisible() {
+        const textDisplay = document.getElementById('text-display');
+        const currentCharElement = document.querySelector('.char.current');
+        
+        if (currentCharElement && textDisplay) {
+            const displayRect = textDisplay.getBoundingClientRect();
+            const charRect = currentCharElement.getBoundingClientRect();
+            
+            // Check if current character is near the bottom of the display
+            const threshold = displayRect.height * 0.8; // 80% of display height
+            
+            if (charRect.top - displayRect.top > threshold) {
+                // Smooth scroll to keep current character in view
+                const scrollTop = textDisplay.scrollTop + (charRect.top - displayRect.top) - (displayRect.height * 0.3);
+                textDisplay.scrollTo({
+                    top: scrollTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
     }
     
     updateAdvancedAnalytics() {

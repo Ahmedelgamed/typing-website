@@ -366,6 +366,9 @@ body.focus-mode-active .container {
     background: rgba(20, 20, 32, 0.95);
     backdrop-filter: blur(40px);
     border: 2px solid rgba(99, 102, 241, 0.3);
+    max-height: 350px;
+    overflow-y: auto;
+    line-height: 1.9;
 }
 
 /* Focus Mode Indicator */

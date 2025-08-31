@@ -266,18 +266,20 @@ header h1::after {
     background: var(--bg-glass);
     backdrop-filter: blur(30px);
     border-radius: 24px;
-    min-height: 180px;
-    max-height: 220px;
-    overflow: hidden;
+    min-height: 200px;
+    max-height: 280px;
+    overflow-y: auto;
+    overflow-x: hidden;
     text-align: left;
     font-weight: 400;
     letter-spacing: 0.02em;
     border: 1px solid var(--border-subtle);
     transition: var(--transition-medium);
-    display: flex;
-    align-items: center;
+    display: block;
     position: relative;
     box-shadow: var(--shadow-medium);
+    word-wrap: break-word;
+    hyphens: auto;
 }
 
 .text-display:focus-within {
@@ -287,20 +289,26 @@ header h1::after {
 
 .text-display .text-content {
     transition: var(--transition-slow);
-    display: inline-block;
+    display: block;
     white-space: pre-wrap;
     word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     position: relative;
+    width: 100%;
+    line-height: inherit;
 }
 
 /* Character States - Ultra Refined */
 .char {
     position: relative;
     transition: var(--transition-fast);
-    border-radius: 6px;
-    padding: 2px 1px;
-    margin: 0;
+    border-radius: 4px;
+    padding: 3px 1px;
+    margin: 0 1px;
     display: inline-block;
+    line-height: 1.6;
+    vertical-align: baseline;
 }
 
 .char.correct {
@@ -324,6 +332,7 @@ header h1::after {
     transform: scale(1.05);
     font-weight: 600;
     z-index: 10;
+    position: relative;
 }
 
 .char.next {
@@ -608,6 +617,49 @@ body.adaptive-mode .stat-value {
     text-shadow: var(--glow-subtle);
 }
 
+/* Smooth Scrolling for Text Display */
+.text-display::-webkit-scrollbar {
+    width: 6px;
+}
+
+.text-display::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.text-display::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+.text-display::-webkit-scrollbar-thumb:hover {
+    opacity: 1;
+}
+
+/* Text Content Positioning */
+.text-display .text-content {
+    padding-bottom: 1rem;
+}
+
+/* Better spacing for readability */
+.text-display .char + .char {
+    /* Add slight spacing between characters for better readability */
+}
+
+/* Word separation */
+.char[data-char=" "] + .char {
+    margin-left: 0.15em;
+}
+
+/* Prevent text selection on completed characters */
+.char.correct,
+.char.incorrect {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
 /* Responsive Design - Mobile First */
 @media (max-width: 768px) {
     .container {
@@ -632,9 +684,18 @@ body.adaptive-mode .stat-value {
     }
     
     .text-display {
-        font-size: 1.2rem;
+        font-size: clamp(1.1rem, 4vw, 1.3rem);
         padding: 2rem 1.5rem;
-        min-height: 150px;
+        margin: 2rem 0;
+        min-height: 160px;
+        max-height: 240px;
+        line-height: 1.7;
+    }
+    
+    .char {
+        padding: 2px 0.5px;
+        margin: 0 0.5px;
+        line-height: 1.5;
     }
     
     .controls {
@@ -684,8 +745,20 @@ body.adaptive-mode .stat-value {
     }
     
     .text-display {
-        font-size: 1.1rem;
+        font-size: clamp(1rem, 5vw, 1.2rem);
         padding: 1.5rem 1rem;
+        margin: 1.5rem 0;
+        min-height: 140px;
+        max-height: 200px;
+        line-height: 1.6;
+        border-radius: 16px;
+    }
+    
+    .char {
+        padding: 1px 0.3px;
+        margin: 0 0.3px;
+        line-height: 1.4;
+        border-radius: 3px;
     }
     
     .result-value {
@@ -694,6 +767,8 @@ body.adaptive-mode .stat-value {
     
     .keyboard-hints {
         gap: 1rem;
+        flex-direction: column;
+        align-items: center;
     }
     
     .hint {
