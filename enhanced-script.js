@@ -36,16 +36,27 @@ class EnhancedTypingTrainer {
         this.sessionKeystrokes = [];
         this.isActive = false;
         
-        // Keybr-style letter progression
+        // Advanced Keybr-style letter progression with frequency-based ordering
         this.homeRowLetters = ['a', 's', 'd', 'f', 'j', 'k', 'l', ';'];
         this.letterProgression = ['f', 'j', 'd', 'k', 's', 'l', 'a', ';', 'g', 'h', 'e', 'i', 'r', 'u', 'o', 't', 'n', 'v', 'c', 'm', 'w', 'b', 'p', 'y', 'x', 'q', 'z'];
         this.unlockedLetters = this.getUnlockedLetters();
         this.letterMastery = this.loadLetterMastery();
         
-        // Practice phases
-        this.currentPhase = this.getCurrentPhase(); // 'foundation' or 'application'
-        this.targetWPM = 15; // Minimum WPM to progress
-        this.targetAccuracy = 95; // Minimum accuracy to progress
+        // Advanced learning parameters
+        this.targetWPM = 15; // Base WPM target
+        this.targetAccuracy = 95; // Base accuracy target
+        this.adaptiveTargetWPM = this.calculateAdaptiveTarget('wpm');
+        this.adaptiveTargetAccuracy = this.calculateAdaptiveTarget('accuracy');
+        
+        // Learning algorithm parameters
+        this.learningRate = 0.1; // How quickly difficulty adjusts
+        this.difficultyScore = 1.0; // Current difficulty multiplier
+        this.confidenceThreshold = 0.8; // Confidence needed to progress
+        this.minimumPracticeRounds = 10; // Min rounds before letter unlock
+        
+        // Practice phases with sub-phases
+        this.currentPhase = this.getCurrentPhase(); // 'foundation', 'transition', 'application'
+        this.subPhase = this.getCurrentSubPhase(); // 'introduction', 'practice', 'mastery'
         
         // Real-time metrics
         this.wpm = 0;
@@ -256,32 +267,41 @@ class EnhancedTypingTrainer {
     }
     
     generateFoundationPractice(length) {
-        // Keybr-style systematic progression
+        // Advanced Keybr-style systematic progression with confidence scoring
         let text = '';
         const availableLetters = this.unlockedLetters.slice();
         
-        // Focus heavily on the most recently unlocked letter
+        // Get learning priorities
         const latestLetter = availableLetters[availableLetters.length - 1];
         const problemLetters = this.getProblemLetters();
+        const confidenceLevels = this.calculateLetterConfidence();
+        
+        // Determine focus distribution based on learning phase
+        const focusWeights = this.calculateFocusWeights(latestLetter, problemLetters, confidenceLevels);
         
         for (let i = 0; i < length; i++) {
             let selectedLetter;
+            const random = Math.random();
             
-            if (Math.random() < 0.4 && latestLetter) {
-                // 40% chance to use latest unlocked letter
+            if (random < focusWeights.latest && latestLetter) {
+                // Focus on latest unlocked letter
                 selectedLetter = latestLetter;
-            } else if (Math.random() < 0.3 && problemLetters.length > 0) {
-                // 30% chance to use problem letters
-                selectedLetter = problemLetters[Math.floor(Math.random() * problemLetters.length)];
+            } else if (random < focusWeights.latest + focusWeights.problem && problemLetters.length > 0) {
+                // Practice problem letters with weighted selection
+                selectedLetter = this.selectWeightedProblemLetter(problemLetters);
+            } else if (random < focusWeights.latest + focusWeights.problem + focusWeights.review) {
+                // Review letters that need reinforcement
+                selectedLetter = this.selectReviewLetter(availableLetters, confidenceLevels);
             } else {
-                // Use any available letter
+                // Random practice from available letters
                 selectedLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
             }
             
             text += selectedLetter;
             
-            // Add spaces less frequently in foundation phase
-            if (i > 0 && Math.random() < 0.1) {
+            // Adaptive spacing based on difficulty and progress
+            const spacingProbability = this.calculateSpacingProbability(i, selectedLetter);
+            if (i > 0 && Math.random() < spacingProbability) {
                 text += ' ';
                 i++;
             }
@@ -423,24 +443,35 @@ class EnhancedTypingTrainer {
     
     displayText() {
         const textDisplay = document.getElementById('text-display');
+        
+        // Performance optimization: use DocumentFragment for batch DOM updates
+        const fragment = document.createDocumentFragment();
         const chars = this.currentText.split('');
         
-        textDisplay.innerHTML = chars.map((char, index) => {
-            let className = 'char';
+        // Use requestAnimationFrame for smooth rendering
+        requestAnimationFrame(() => {
+            // Create optimized HTML string instead of DOM manipulation
+            const htmlChunks = [];
             
-            if (index < this.currentIndex) {
-                className += this.isCharCorrect(index) ? ' correct' : ' incorrect';
-            } else if (index === this.currentIndex) {
-                className += ' current';
-                this.currentChar = char;
-            } else if (index < this.currentIndex + 5) {
-                className += ' next';
+            for (let index = 0; index < chars.length; index++) {
+                const char = chars[index];
+                let className = 'char';
+                
+                if (index < this.currentIndex) {
+                    className += this.isCharCorrect(index) ? ' correct' : ' incorrect';
+                } else if (index === this.currentIndex) {
+                    className += ' current';
+                    this.currentChar = char;
+                } else if (index < this.currentIndex + 5) {
+                    className += ' next';
+                }
+                
+                htmlChunks.push(`<span class="${className}" data-index="${index}">${char === ' ' ? '&nbsp;' : char}</span>`);
             }
             
-            return `<span class="${className}" data-index="${index}">${char === ' ' ? '&nbsp;' : char}</span>`;
-        }).join('');
-        
-        this.updateKeyboardHighlight();
+            textDisplay.innerHTML = htmlChunks.join('');
+            this.updateKeyboardHighlight();
+        });
     }
     
     updateKeyboardHighlight() {
@@ -540,27 +571,45 @@ class EnhancedTypingTrainer {
         const inputValue = e.target.value;
         const newIndex = inputValue.length;
         
-        // Record keystroke timing
-        const keystroke = {
-            char: this.currentText[this.currentIndex],
-            correct: this.isCharCorrect(this.currentIndex),
-            timestamp: Date.now(),
-            timeSinceStart: Date.now() - this.startTime
-        };
+        // Performance optimization: only process if index actually changed
+        if (newIndex === this.currentIndex) return;
         
-        this.sessionKeystrokes.push(keystroke);
+        // Batch multiple character inputs (paste or very fast typing)
+        const charDiff = newIndex - this.currentIndex;
+        const now = Date.now();
         
-        // Update error tracking
-        if (!keystroke.correct) {
-            const errorKey = keystroke.char.toLowerCase();
-            this.sessionErrors.set(errorKey, (this.sessionErrors.get(errorKey) || 0) + 1);
-            this.playErrorSound();
-            this.showErrorFeedback();
-        } else {
-            this.playSuccessSound();
+        // Process each character that was added
+        for (let i = 0; i < charDiff; i++) {
+            const charIndex = this.currentIndex + i;
+            if (charIndex >= this.currentText.length) break;
+            
+            const keystroke = {
+                char: this.currentText[charIndex],
+                correct: this.isCharCorrect(charIndex, inputValue),
+                timestamp: now,
+                timeSinceStart: now - this.startTime
+            };
+            
+            this.sessionKeystrokes.push(keystroke);
+            
+            // Update error tracking (optimized)
+            if (!keystroke.correct) {
+                const errorKey = keystroke.char.toLowerCase();
+                this.sessionErrors.set(errorKey, (this.sessionErrors.get(errorKey) || 0) + 1);
+                
+                // Only play sounds for single character inputs to avoid spam
+                if (charDiff === 1) {
+                    this.playErrorSound();
+                    this.showErrorFeedback();
+                }
+            } else if (charDiff === 1) {
+                this.playSuccessSound();
+            }
         }
         
         this.currentIndex = newIndex;
+        
+        // Optimize display updates - only update if visible changes needed
         this.displayText();
         this.updateProgress();
         
@@ -620,8 +669,10 @@ class EnhancedTypingTrainer {
         this.updateKeyStats();
         this.updateLetterMastery();
         this.checkPhaseProgression();
+        this.savePersonalHistory();
         this.saveProgress();
         this.showDetailedResults();
+        this.updateAdvancedAnalytics();
         
         document.getElementById('start-btn').disabled = false;
         this.stopMetricsUpdater();
@@ -631,31 +682,61 @@ class EnhancedTypingTrainer {
         const totalChars = this.currentIndex;
         const errors = Array.from(this.sessionErrors.values()).reduce((a, b) => a + b, 0);
         
-        // Calculate WPM (standard: 5 chars = 1 word)
+        // Calculate advanced metrics
         this.wpm = Math.round((totalChars / 5) / (duration / 60));
-        
-        // Calculate accuracy
         this.accuracy = Math.round(((totalChars - errors) / totalChars) * 100) || 0;
+        this.consistencyScore = this.calculateConsistencyScore();
+        this.flowScore = this.calculateFlowScore();
+        this.difficultyAdjustment = this.calculateDifficultyAdjustment();
         
-        // Update display
+        // Advanced learning metrics
+        this.learningVelocity = this.calculateLearningVelocity();
+        this.retentionScore = this.calculateRetentionScore();
+        this.masteryProgress = this.calculateMasteryProgress();
+        
+        // Update display with advanced metrics
         document.getElementById('wpm').textContent = this.wpm;
         document.getElementById('accuracy').textContent = this.accuracy + '%';
+        
+        // Update advanced displays if available
+        this.updateAdvancedMetrics({
+            consistency: this.consistencyScore,
+            flow: this.flowScore,
+            learning: this.learningVelocity,
+            retention: this.retentionScore,
+            mastery: this.masteryProgress
+        });
     }
     
     startMetricsUpdater() {
+        // Optimized metrics update with throttling
+        let lastUpdate = 0;
+        const updateThreshold = 250; // Update every 250ms instead of 500ms for better responsiveness
+        
         this.metricsUpdateInterval = setInterval(() => {
-            if (this.isActive && this.startTime) {
-                const duration = (Date.now() - this.startTime) / 1000;
+            const now = Date.now();
+            if (this.isActive && this.startTime && (now - lastUpdate) >= updateThreshold) {
+                lastUpdate = now;
+                
+                const duration = (now - this.startTime) / 1000;
                 const totalChars = this.currentIndex;
                 const errors = Array.from(this.sessionErrors.values()).reduce((a, b) => a + b, 0);
                 
                 this.wpm = Math.round((totalChars / 5) / (duration / 60)) || 0;
                 this.accuracy = Math.round(((totalChars - errors) / totalChars) * 100) || 100;
                 
-                document.getElementById('wpm').textContent = this.wpm;
-                document.getElementById('accuracy').textContent = this.accuracy + '%';
+                // Batch DOM updates
+                const wpmElement = document.getElementById('wpm');
+                const accuracyElement = document.getElementById('accuracy');
+                
+                if (wpmElement && accuracyElement) {
+                    requestAnimationFrame(() => {
+                        wpmElement.textContent = this.wpm;
+                        accuracyElement.textContent = this.accuracy + '%';
+                    });
+                }
             }
-        }, 500);
+        }, 100); // Check every 100ms but only update every 250ms
     }
     
     stopMetricsUpdater() {
@@ -987,9 +1068,9 @@ class EnhancedTypingTrainer {
         }
     }
     
-    isCharCorrect(index) {
-        const typingInput = document.getElementById('typing-input');
-        return typingInput.value[index] === this.currentText[index];
+    isCharCorrect(index, inputValue = null) {
+        const value = inputValue || document.getElementById('typing-input').value;
+        return value[index] === this.currentText[index];
     }
     
     showDetailedResults() {
@@ -1138,6 +1219,517 @@ class EnhancedTypingTrainer {
                 <span class="legend-item"><div class="legend-color mastered"></div>Mastered</span>
             </div>
         `;
+    }
+    
+    // Advanced Learning Algorithm Methods
+    calculateAdaptiveTarget(metric) {
+        const history = this.getPersonalHistory();
+        if (!history || history.length < 5) {
+            return metric === 'wpm' ? this.targetWPM : this.targetAccuracy;
+        }
+        
+        const recentPerformance = history.slice(-10);
+        const average = recentPerformance.reduce((sum, session) => 
+            sum + (metric === 'wpm' ? session.wpm : session.accuracy), 0) / recentPerformance.length;
+        
+        // Set adaptive target slightly above recent performance
+        return metric === 'wpm' ? 
+            Math.max(this.targetWPM, Math.round(average * 1.1)) :
+            Math.max(this.targetAccuracy, Math.round(average * 1.02));
+    }
+    
+    calculateLetterConfidence() {
+        const confidence = {};
+        this.unlockedLetters.forEach(letter => {
+            const stats = this.keyStats[letter];
+            if (!stats || stats.total < 10) {
+                confidence[letter] = 0;
+                return;
+            }
+            
+            // Calculate confidence based on accuracy, speed, and consistency
+            const accuracyScore = Math.min(stats.accuracy / this.adaptiveTargetAccuracy, 1);
+            const speedScore = Math.min((stats.speed / 5) / this.adaptiveTargetWPM, 1);
+            const consistencyScore = Math.max(0, 1 - (stats.variance || 0.5));
+            
+            confidence[letter] = (accuracyScore * 0.5 + speedScore * 0.3 + consistencyScore * 0.2);
+        });
+        
+        return confidence;
+    }
+    
+    calculateFocusWeights(latestLetter, problemLetters, confidenceLevels) {
+        const latestConfidence = confidenceLevels[latestLetter] || 0;
+        const averageConfidence = Object.values(confidenceLevels).reduce((a, b) => a + b, 0) / 
+                                 Object.keys(confidenceLevels).length || 0;
+        
+        // Adjust focus based on confidence and learning phase
+        let weights = {
+            latest: 0.4,    // Focus on newest letter
+            problem: 0.3,   // Address problem letters
+            review: 0.2,    // Review for retention
+            random: 0.1     // Maintain variety
+        };
+        
+        // If latest letter has low confidence, increase focus
+        if (latestConfidence < this.confidenceThreshold) {
+            weights.latest = Math.min(0.6, weights.latest + 0.2);
+            weights.problem = Math.max(0.2, weights.problem - 0.1);
+        }
+        
+        // If average confidence is high, reduce review and increase exploration
+        if (averageConfidence > 0.8) {
+            weights.review = Math.max(0.1, weights.review - 0.1);
+            weights.random += 0.1;
+        }
+        
+        return weights;
+    }
+    
+    selectWeightedProblemLetter(problemLetters) {
+        // Select problem letters based on error frequency and recency
+        const weights = problemLetters.map(letter => {
+            const errors = this.sessionErrors.get(letter) || 0;
+            const recentErrors = this.getRecentErrors(letter);
+            return errors + (recentErrors * 2); // Weight recent errors more heavily
+        });
+        
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        if (totalWeight === 0) return problemLetters[0];
+        
+        let random = Math.random() * totalWeight;
+        for (let i = 0; i < problemLetters.length; i++) {
+            random -= weights[i];
+            if (random <= 0) return problemLetters[i];
+        }
+        
+        return problemLetters[problemLetters.length - 1];
+    }
+    
+    selectReviewLetter(availableLetters, confidenceLevels) {
+        // Select letters that need reinforcement (medium confidence)
+        const reviewCandidates = availableLetters.filter(letter => {
+            const confidence = confidenceLevels[letter] || 0;
+            return confidence > 0.3 && confidence < 0.8;
+        });
+        
+        if (reviewCandidates.length === 0) {
+            return availableLetters[Math.floor(Math.random() * availableLetters.length)];
+        }
+        
+        // Prefer letters with lower confidence among review candidates
+        const sortedCandidates = reviewCandidates.sort((a, b) => 
+            confidenceLevels[a] - confidenceLevels[b]);
+        
+        // Select from the lower half of confidence scores
+        const selectionPool = sortedCandidates.slice(0, Math.ceil(sortedCandidates.length / 2));
+        return selectionPool[Math.floor(Math.random() * selectionPool.length)];
+    }
+    
+    calculateSpacingProbability(position, currentLetter) {
+        // Adaptive spacing based on letter difficulty and position
+        const letterStats = this.keyStats[currentLetter];
+        const letterDifficulty = letterStats ? 
+            Math.max(0, 1 - (letterStats.accuracy / 100)) : 0.5;
+        
+        const baseSpacing = 0.15; // Base 15% chance for spaces
+        const difficultyAdjustment = letterDifficulty * 0.1; // Reduce spaces for difficult letters
+        const positionAdjustment = Math.min(0.05, position * 0.001); // Slight increase over time
+        
+        return Math.max(0.05, baseSpacing - difficultyAdjustment + positionAdjustment);
+    }
+    
+    calculateConsistencyScore() {
+        if (this.sessionKeystrokes.length < 10) return 100;
+        
+        const timings = this.sessionKeystrokes.map(k => k.timeSinceStart);
+        const intervals = [];
+        
+        for (let i = 1; i < timings.length; i++) {
+            intervals.push(timings[i] - timings[i-1]);
+        }
+        
+        const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        const variance = intervals.reduce((sum, interval) => 
+            sum + Math.pow(interval - avgInterval, 2), 0) / intervals.length;
+        
+        const standardDeviation = Math.sqrt(variance);
+        const coefficientOfVariation = standardDeviation / avgInterval;
+        
+        // Convert to score (lower variation = higher score)
+        return Math.max(0, Math.min(100, 100 - (coefficientOfVariation * 200)));
+    }
+    
+    calculateFlowScore() {
+        // Measure typing flow based on rhythm and smoothness
+        if (this.sessionKeystrokes.length < 20) return 50;
+        
+        let flowMetrics = {
+            rhythmScore: 0,
+            smoothnessScore: 0,
+            accelerationScore: 0
+        };
+        
+        const intervals = this.sessionKeystrokes.slice(1).map((stroke, i) => 
+            stroke.timeSinceStart - this.sessionKeystrokes[i].timeSinceStart);
+        
+        // Calculate rhythm consistency
+        const medianInterval = [...intervals].sort((a, b) => a - b)[Math.floor(intervals.length / 2)];
+        const rhythmDeviations = intervals.map(interval => 
+            Math.abs(interval - medianInterval) / medianInterval);
+        flowMetrics.rhythmScore = Math.max(0, 100 - (rhythmDeviations.reduce((a, b) => a + b, 0) / 
+                                         rhythmDeviations.length * 100));
+        
+        // Calculate smoothness (fewer sudden changes)
+        const accelerations = [];
+        for (let i = 2; i < intervals.length; i++) {
+            const acceleration = Math.abs(intervals[i] - intervals[i-1]);
+            accelerations.push(acceleration);
+        }
+        
+        const avgAcceleration = accelerations.reduce((a, b) => a + b, 0) / accelerations.length;
+        flowMetrics.smoothnessScore = Math.max(0, 100 - (avgAcceleration / medianInterval * 50));
+        
+        // Overall flow score
+        return Math.round((flowMetrics.rhythmScore + flowMetrics.smoothnessScore) / 2);
+    }
+    
+    calculateDifficultyAdjustment() {
+        // Calculate how much to adjust difficulty based on performance
+        const targetPerformance = {
+            wpm: this.adaptiveTargetWPM,
+            accuracy: this.adaptiveTargetAccuracy
+        };
+        
+        const currentPerformance = {
+            wpm: this.wpm,
+            accuracy: this.accuracy
+        };
+        
+        const wpmRatio = currentPerformance.wpm / targetPerformance.wpm;
+        const accuracyRatio = currentPerformance.accuracy / targetPerformance.accuracy;
+        
+        // If performing above target, increase difficulty
+        // If performing below target, decrease difficulty
+        const performanceRatio = (wpmRatio * 0.4 + accuracyRatio * 0.6);
+        
+        if (performanceRatio > 1.1) {
+            return Math.min(0.2, (performanceRatio - 1) * this.learningRate);
+        } else if (performanceRatio < 0.9) {
+            return Math.max(-0.2, (performanceRatio - 1) * this.learningRate);
+        }
+        
+        return 0;
+    }
+    
+    calculateLearningVelocity() {
+        // Measure rate of improvement over recent sessions
+        const history = this.getPersonalHistory();
+        if (!history || history.length < 3) return 0;
+        
+        const recentSessions = history.slice(-5);
+        if (recentSessions.length < 2) return 0;
+        
+        const firstSession = recentSessions[0];
+        const lastSession = recentSessions[recentSessions.length - 1];
+        const sessionSpan = recentSessions.length;
+        
+        const wpmImprovement = (lastSession.wpm - firstSession.wpm) / sessionSpan;
+        const accuracyImprovement = (lastSession.accuracy - firstSession.accuracy) / sessionSpan;
+        
+        // Normalize and combine improvements
+        const normalizedWpmImprovement = wpmImprovement / Math.max(1, firstSession.wpm) * 100;
+        const normalizedAccuracyImprovement = accuracyImprovement / Math.max(1, firstSession.accuracy) * 100;
+        
+        return Math.round((normalizedWpmImprovement * 0.6 + normalizedAccuracyImprovement * 0.4) * 10) / 10;
+    }
+    
+    calculateRetentionScore() {
+        // Measure how well previously learned letters are retained
+        const retentionData = {};
+        let totalRetention = 0;
+        let letterCount = 0;
+        
+        this.unlockedLetters.forEach(letter => {
+            const currentStats = this.keyStats[letter];
+            const historicalStats = this.getHistoricalStats(letter);
+            
+            if (currentStats && historicalStats && historicalStats.length > 0) {
+                const recentAccuracy = currentStats.accuracy || 0;
+                const historicalAccuracy = historicalStats[historicalStats.length - 1].accuracy || 0;
+                
+                // Retention = how well current performance maintains historical performance
+                const retention = Math.min(100, (recentAccuracy / Math.max(1, historicalAccuracy)) * 100);
+                retentionData[letter] = retention;
+                totalRetention += retention;
+                letterCount++;
+            }
+        });
+        
+        return letterCount > 0 ? Math.round(totalRetention / letterCount) : 100;
+    }
+    
+    getCurrentSubPhase() {
+        const saved = localStorage.getItem('currentSubPhase');
+        if (saved) return saved;
+        
+        // Auto-determine sub-phase based on letter confidence
+        const confidenceLevels = this.calculateLetterConfidence();
+        const latestLetter = this.unlockedLetters[this.unlockedLetters.length - 1];
+        const latestConfidence = confidenceLevels[latestLetter] || 0;
+        const attempts = this.keyStats[latestLetter]?.total || 0;
+        
+        if (attempts < 5) return 'introduction';
+        if (latestConfidence < this.confidenceThreshold) return 'practice';
+        return 'mastery';
+    }
+    
+    updateAdvancedMetrics(metrics) {
+        // Update advanced metric displays if elements exist
+        const elements = {
+            'consistency-score': metrics.consistency,
+            'flow-score': metrics.flow,
+            'learning-velocity': metrics.learning,
+            'retention-score': metrics.retention,
+            'mastery-progress': metrics.mastery
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = typeof value === 'number' ? 
+                    (value > 10 ? Math.round(value) : Math.round(value * 10) / 10) : value;
+            }
+        });
+    }
+    
+    getRecentErrors(letter) {
+        // Get errors for this letter in recent keystrokes (last 50 strokes)
+        const recentStrokes = this.sessionKeystrokes.slice(-50);
+        return recentStrokes.filter(stroke => 
+            stroke.char.toLowerCase() === letter.toLowerCase() && !stroke.correct).length;
+    }
+    
+    getPersonalHistory() {
+        const saved = localStorage.getItem('enhancedTypingHistory');
+        return saved ? JSON.parse(saved) : [];
+    }
+    
+    savePersonalHistory() {
+        const history = this.getPersonalHistory();
+        const session = {
+            date: Date.now(),
+            wpm: this.wpm,
+            accuracy: this.accuracy,
+            consistency: this.consistencyScore,
+            flow: this.flowScore,
+            phase: this.currentPhase,
+            subPhase: this.subPhase,
+            unlockedLetters: this.unlockedLetters.length,
+            duration: Date.now() - this.startTime
+        };
+        
+        history.push(session);
+        
+        // Keep last 100 sessions
+        if (history.length > 100) {
+            history.splice(0, history.length - 100);
+        }
+        
+        localStorage.setItem('enhancedTypingHistory', JSON.stringify(history));
+    }
+    
+    getHistoricalStats(letter) {
+        const saved = localStorage.getItem(`letterHistory_${letter}`);
+        return saved ? JSON.parse(saved) : [];
+    }
+    
+    updateAdvancedAnalytics() {
+        // Update the advanced analytics panel with real-time data
+        this.updateSpeedChart();
+        this.updateProblemKeysDisplay();
+        this.updateRecommendations();
+        this.updateLearningMetricsDisplay();
+    }
+    
+    updateSpeedChart() {
+        const chartBars = document.querySelectorAll('#speed-chart .chart-bar');
+        if (chartBars.length === 0) return;
+        
+        // Calculate speed distribution throughout the session
+        const segments = 5;
+        const segmentSize = Math.floor(this.sessionKeystrokes.length / segments);
+        const speedSegments = [];
+        
+        for (let i = 0; i < segments; i++) {
+            const start = i * segmentSize;
+            const end = Math.min((i + 1) * segmentSize, this.sessionKeystrokes.length);
+            const segmentStrokes = this.sessionKeystrokes.slice(start, end);
+            
+            if (segmentStrokes.length > 0) {
+                const timeSpan = (segmentStrokes[segmentStrokes.length - 1].timeSinceStart - 
+                                segmentStrokes[0].timeSinceStart) / 1000 / 60; // minutes
+                const charsInSegment = segmentStrokes.length;
+                const segmentWPM = timeSpan > 0 ? Math.round((charsInSegment / 5) / timeSpan) : 0;
+                speedSegments.push(segmentWPM);
+            }
+        }
+        
+        // Update chart bars
+        const maxWPM = Math.max(...speedSegments, 1);
+        chartBars.forEach((bar, index) => {
+            if (index < speedSegments.length) {
+                const height = (speedSegments[index] / maxWPM) * 100;
+                bar.style.height = `${Math.max(height, 10)}%`;
+                bar.title = `${speedSegments[index]} WPM`;
+            }
+        });
+    }
+    
+    updateProblemKeysDisplay() {
+        const problemKeysContainer = document.getElementById('problem-keys-mini');
+        if (!problemKeysContainer) return;
+        
+        const problemKeys = Array.from(this.sessionErrors.entries())
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 3); // Top 3 problem keys
+        
+        if (problemKeys.length === 0) {
+            problemKeysContainer.innerHTML = '<div class="no-problems">No errors this session! 🎉</div>';
+            return;
+        }
+        
+        problemKeysContainer.innerHTML = problemKeys.map(([key, errors]) => `
+            <div class="problem-key-item">
+                <span class="key">${key.toUpperCase()}</span>
+                <span class="errors">${errors} error${errors !== 1 ? 's' : ''}</span>
+            </div>
+        `).join('');
+    }
+    
+    updateRecommendations() {
+        const recommendationsContainer = document.getElementById('recommendations');
+        if (!recommendationsContainer) return;
+        
+        const recommendations = this.generatePersonalizedRecommendations();
+        
+        recommendationsContainer.innerHTML = recommendations.map(rec => `
+            <div class="recommendation">
+                <span class="rec-icon">${rec.icon}</span>
+                <span class="rec-text">${rec.text}</span>
+            </div>
+        `).join('');
+    }
+    
+    updateLearningMetricsDisplay() {
+        const improvements = document.getElementById('improvement-suggestion');
+        if (!improvements) return;
+        
+        const suggestions = this.generateImprovementSuggestions();
+        improvements.textContent = suggestions;
+    }
+    
+    generatePersonalizedRecommendations() {
+        const recommendations = [];
+        
+        // Analyze problem keys
+        const problemKeys = Array.from(this.sessionErrors.entries())
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 2);
+        
+        if (problemKeys.length > 0) {
+            const keyList = problemKeys.map(([key]) => key.toUpperCase()).join(' and ');
+            recommendations.push({
+                icon: '🎯',
+                text: `Focus on practicing the ${keyList} key${problemKeys.length > 1 ? 's' : ''}`
+            });
+        }
+        
+        // Analyze consistency
+        if (this.consistencyScore < 70) {
+            recommendations.push({
+                icon: '⚡',
+                text: 'Work on maintaining steady rhythm - avoid rushing'
+            });
+        } else if (this.consistencyScore > 85) {
+            recommendations.push({
+                icon: '🚀',
+                text: 'Excellent consistency! Try increasing your speed'
+            });
+        }
+        
+        // Analyze accuracy vs speed balance
+        if (this.accuracy > 95 && this.wpm < this.adaptiveTargetWPM) {
+            recommendations.push({
+                icon: '📈',
+                text: 'High accuracy achieved - ready to increase speed'
+            });
+        } else if (this.accuracy < 90) {
+            recommendations.push({
+                icon: '🎪',
+                text: 'Focus on accuracy before increasing speed'
+            });
+        }
+        
+        // Phase progression recommendations
+        if (this.currentPhase === 'foundation') {
+            const confidenceLevels = this.calculateLetterConfidence();
+            const latestLetter = this.unlockedLetters[this.unlockedLetters.length - 1];
+            const latestConfidence = confidenceLevels[latestLetter] || 0;
+            
+            if (latestConfidence > 0.8) {
+                recommendations.push({
+                    icon: '🔓',
+                    text: `Ready to unlock the next letter!`
+                });
+            }
+        }
+        
+        // Default encouragement if no specific recommendations
+        if (recommendations.length === 0) {
+            recommendations.push({
+                icon: '✨',
+                text: 'Great session! Keep up the consistent practice'
+            });
+        }
+        
+        return recommendations.slice(0, 3); // Limit to 3 recommendations
+    }
+    
+    generateImprovementSuggestions() {
+        const problemKeys = Array.from(this.sessionErrors.entries())
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 1);
+        
+        if (problemKeys.length === 0) {
+            return "Excellent accuracy! Focus on building speed while maintaining precision.";
+        }
+        
+        const [problemKey] = problemKeys[0];
+        const fingerMap = {
+            'q': 'left pinky', 'w': 'left ring', 'e': 'left middle', 'r': 'left index', 't': 'left index',
+            'y': 'right index', 'u': 'right index', 'i': 'right middle', 'o': 'right ring', 'p': 'right pinky',
+            'a': 'left pinky', 's': 'left ring', 'd': 'left middle', 'f': 'left index', 'g': 'left index',
+            'h': 'right index', 'j': 'right index', 'k': 'right middle', 'l': 'right ring', ';': 'right pinky',
+            'z': 'left pinky', 'x': 'left ring', 'c': 'left middle', 'v': 'left index', 'b': 'left index',
+            'n': 'right index', 'm': 'right index', ',': 'right middle', '.': 'right ring', '/': 'right pinky'
+        };
+        
+        const finger = fingerMap[problemKey.toLowerCase()] || 'specific finger';
+        const keyUpper = problemKey.toUpperCase();
+        
+        // Generate contextual practice suggestions
+        const practiceSuggestions = {
+            'q': 'Practice "qu" combinations like "quick", "queen", "quiet"',
+            'x': 'Practice words like "example", "extra", "exact"',
+            'z': 'Practice words like "zero", "zone", "size"',
+            'j': 'Practice words like "jump", "just", "major"',
+            ';': 'Practice semicolon usage in programming contexts',
+            '/': 'Practice slash combinations and file paths'
+        };
+        
+        return practiceSuggestions[problemKey.toLowerCase()] || 
+               `Focus on the ${keyUpper} key with your ${finger} - practice slowly with proper finger placement.`;
     }
 }
 

@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpeedWPM - Free Typing Speed Test</title>
-    <meta name="description" content="SpeedWPM: Clean, fast typing speed test. Test your WPM and accuracy with multiple text modes. Simple, effective typing practice."
+    <title>SpeedWPM - Premium Typing Trainer & Speed Test</title>
+    <meta name="description" content="Advanced typing trainer with adaptive learning, keybr-style progression, and professional analytics. Master touch typing with intelligent practice and detailed feedback.">
     <meta name="keywords" content="SpeedWPM, typing speed test, WPM test, typing practice, free typing test, typing trainer, keyboard speed">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://speedwpm.com/">
-    <meta property="og:title" content="SpeedWPM - Free Typing Speed Test">
-    <meta property="og:description" content="SpeedWPM: Clean, fast typing speed test. Test your WPM and accuracy with multiple text modes."
+    <meta property="og:title" content="SpeedWPM - Premium Typing Trainer & Speed Test">
+    <meta property="og:description" content="Advanced typing trainer with adaptive learning, keybr-style progression, and professional analytics."
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://speedwpm.com/">
-    <meta property="twitter:title" content="SpeedWPM - Free Typing Speed Test">
-    <meta property="twitter:description" content="SpeedWPM: Clean, fast typing speed test. Test your WPM and accuracy with multiple text modes."
+    <meta property="twitter:title" content="SpeedWPM - Premium Typing Trainer & Speed Test">
+    <meta property="twitter:description" content="Advanced typing trainer with adaptive learning, keybr-style progression, and professional analytics."
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://speedwpm.com/">
@@ -39,11 +39,12 @@
       }
     }
     </script>
-    <link rel="stylesheet" href="clean-styles.css">
+    <link rel="stylesheet" href="premium-dark-styles.css">
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6754537992271927"
      crossorigin="anonymous"></script>
      
@@ -153,6 +154,85 @@
                         <span id="final-errors">0</span>
                         <small>errors</small>
                     </div>
+                    <div class="result-detail">
+                        <span id="consistency-score">85</span>
+                        <small>consistency</small>
+                    </div>
+                    <div class="result-detail">
+                        <span id="flow-score">78</span>
+                        <small>flow</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Analytics Panel -->
+            <div class="advanced-analytics" style="margin-top: 3rem;">
+                <h3>Performance Analysis</h3>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h4>Learning Metrics</h4>
+                        <div class="metric-row">
+                            <span class="metric-label">Learning Velocity</span>
+                            <span class="metric-value" id="learning-velocity">+2.3</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Retention Score</span>
+                            <span class="metric-value" id="retention-score">92</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Mastery Progress</span>
+                            <span class="metric-value" id="mastery-progress">68%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h4>Key Analysis</h4>
+                        <div class="problem-keys-mini" id="problem-keys-mini">
+                            <div class="problem-key-item">
+                                <span class="key">Q</span>
+                                <span class="errors">3 errors</span>
+                            </div>
+                        </div>
+                        <div class="improvement-suggestion" id="improvement-suggestion">
+                            Focus on the Q key - practice with 'qu' combinations
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h4>Speed Profile</h4>
+                        <div class="speed-chart" id="speed-chart">
+                            <div class="chart-bars">
+                                <div class="chart-bar" style="height: 60%"></div>
+                                <div class="chart-bar" style="height: 75%"></div>
+                                <div class="chart-bar" style="height: 85%"></div>
+                                <div class="chart-bar" style="height: 80%"></div>
+                                <div class="chart-bar" style="height: 90%"></div>
+                            </div>
+                            <div class="chart-labels">
+                                <span>Start</span>
+                                <span>Peak</span>
+                                <span>End</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h4>Next Steps</h4>
+                        <div class="recommendations" id="recommendations">
+                            <div class="recommendation">
+                                <span class="rec-icon">🎯</span>
+                                <span class="rec-text">Practice 'Q' and 'X' keys more</span>
+                            </div>
+                            <div class="recommendation">
+                                <span class="rec-icon">⚡</span>
+                                <span class="rec-text">Work on maintaining rhythm</span>
+                            </div>
+                            <div class="recommendation">
+                                <span class="rec-icon">📈</span>
+                                <span class="rec-text">Ready for next difficulty level</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,6 +249,7 @@
 
     <script src="script.js"></script>
     <script src="enhanced-script.js"></script>
+    <script src="focus-mode.js"></script>
     <script>
         // Initialize enhanced trainer when in adaptive mode
         document.addEventListener('DOMContentLoaded', function() {
