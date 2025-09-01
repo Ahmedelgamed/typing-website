@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedWPM Pro - Premium Typing Trainer</title>
+    <meta name="description" content="Upgrade to SpeedWPM Pro for advanced analytics, ad-free experience, and premium features. Start your free trial today!">
+    <link rel="stylesheet" href="premium-dark-styles.css">
+    <style>
+        .pricing-hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-glass);
+            border-radius: 24px;
+            margin: 2rem 0;
+        }
+        
+        .pricing-hero h1 {
+            font-size: 3rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .pricing-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border-subtle);
+            position: relative;
+            transition: var(--transition-medium);
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-medium);
+            border-color: var(--accent-primary);
+        }
+        
+        .popular {
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+        
+        .popular::before {
+            content: "MOST POPULAR";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--accent-primary);
+            margin: 1rem 0;
+        }
+        
+        .price span {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin: 2rem 0;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-list li::before {
+            content: "✅";
+            font-size: 1rem;
+        }
+        
+        .cta-button {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            transition: var(--transition-medium);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-medium);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="pricing-hero">
+            <h1>SpeedWPM Pro</h1>
+            <p class="header-subtitle">Unlock Premium Features & Advanced Analytics</p>
+            <p>Join thousands of users improving their typing skills with professional tools</p>
+        </div>
+        
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <h3>Free</h3>
+                <div class="price">$0<span>/month</span></div>
+                <ul class="feature-list">
+                    <li>Basic typing speed tests</li>
+                    <li>5 difficulty modes</li>
+                    <li>Real-time WPM tracking</li>
+                    <li>Basic accuracy metrics</li>
+                    <li>Fun language modes</li>
+                    <li>Mobile responsive design</li>
+                </ul>
+                <button class="cta-button" onclick="window.location.href='index.html'">
+                    Start Free Test
+                </button>
+            </div>
+            
+            <div class="pricing-card popular">
+                <h3>SpeedWPM Pro</h3>
+                <div class="price">$4.99<span>/month</span></div>
+                <ul class="feature-list">
+                    <li>Everything in Free</li>
+                    <li>Ad-free experience</li>
+                    <li>Advanced analytics dashboard</li>
+                    <li>Progress tracking & history</li>
+                    <li>Custom themes & fonts</li>
+                    <li>PDF performance reports</li>
+                    <li>Priority support</li>
+                    <li>Exclusive typing challenges</li>
+                    <li>Personal coaching tips</li>
+                    <li>Competition leaderboards</li>
+                </ul>
+                <button class="cta-button" onclick="startTrial()">
+                    Start 7-Day Free Trial
+                </button>
+            </div>
+            
+            <div class="pricing-card">
+                <h3>Business</h3>
+                <div class="price">$49<span>/month</span></div>
+                <ul class="feature-list">
+                    <li>Everything in Pro</li>
+                    <li>Team management (up to 50 users)</li>
+                    <li>Company performance dashboard</li>
+                    <li>Custom typing tests</li>
+                    <li>HR recruitment tools</li>
+                    <li>White-label options</li>
+                    <li>API access</li>
+                    <li>Priority phone support</li>
+                </ul>
+                <button class="cta-button" onclick="contactSales()">
+                    Contact Sales
+                </button>
+            </div>
+        </div>
+        
+        <div class="testimonials">
+            <h2>What Our Pro Users Say</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial">
+                    <p>"SpeedWPM Pro helped me go from 45 WPM to 85 WPM in just 2 months!"</p>
+                    <cite>- Sarah K., Professional Writer</cite>
+                </div>
+                <div class="testimonial">
+                    <p>"The detailed analytics show exactly which keys I need to practice."</p>
+                    <cite>- Mike R., Software Developer</cite>
+                </div>
+                <div class="testimonial">
+                    <p>"Perfect for training our customer service team. Productivity up 30%!"</p>
+                    <cite>- Lisa M., HR Manager</cite>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function startTrial() {
+            // Integrate with Stripe or PayPal
+            alert('Redirecting to secure checkout... (Integrate payment processor)');
+        }
+        
+        function contactSales() {
+            window.location.href = 'mailto:sales@speedwpm.com?subject=Business Plan Inquiry';
+        }
+    </script>
+</body>
+</html>

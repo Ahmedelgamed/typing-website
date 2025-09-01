@@ -1,0 +1,8 @@
+# Netlify redirects file
+# Redirect all traffic from ahmedelgamed.netlify.app to speedwpm.com
+
+https://ahmedelgamed.netlify.app/* https://speedwpm.com/:splat 301!
+http://ahmedelgamed.netlify.app/* https://speedwpm.com/:splat 301!
+
+# Force HTTPS
+http://speedwpm.com/* https://speedwpm.com/:splat 301!

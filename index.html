@@ -28,6 +28,14 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://speedwpm.com/">
     
+    <!-- Prevent indexing of duplicate content -->
+    <script>
+        // If on Netlify subdomain, redirect to main domain
+        if (window.location.hostname.includes('netlify.app') && window.location.hostname !== 'speedwpm.com') {
+            window.location.replace('https://speedwpm.com' + window.location.pathname + window.location.search);
+        }
+    </script>
+    
     <!-- Schema.org markup for Google -->
     <!-- Enhanced Schema.org markup for Google -->
     <script type="application/ld+json">
